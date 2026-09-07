@@ -46,15 +46,20 @@ async function confirmarPago(p: Pedido) {
   p.pagoConfirmado = true;
 }
 
-function limpiarEntregados() {
-  const entregados = pedidos.value
-    .filter((pedido) => pedido.estado === "entregado")
+function limpiarFinalizados() {
+  const finalizados = pedidos.value
+    .filter(
+      (pedido) =>
+        pedido.estado === "entregado" || pedido.estado === "cancelado",
+    )
     .map((pedido) => pedido._id);
-  if (!entregados.length) return;
+  if (!finalizados.length) return;
 
-  pedidosOcultos.value = [...new Set([...pedidosOcultos.value, ...entregados])];
+  pedidosOcultos.value = [
+    ...new Set([...pedidosOcultos.value, ...finalizados]),
+  ];
   pedidos.value = pedidos.value.filter(
-    (pedido) => !entregados.includes(pedido._id),
+    (pedido) => !finalizados.includes(pedido._id),
   );
   localStorage.setItem(
     CLAVE_PEDIDOS_OCULTOS,
@@ -122,11 +127,15 @@ const pedidosFiltrados = () =>
         Actualizar
       </button>
       <button
-        v-if="pedidos.some((pedido) => pedido.estado === 'entregado')"
+        v-if="
+          pedidos.some((pedido) =>
+            ['entregado', 'cancelado'].includes(pedido.estado),
+          )
+        "
         class="shrink-0 rounded-full border border-crema/20 px-3 py-1.5 font-body text-xs text-crema/70"
-        @click="limpiarEntregados"
+        @click="limpiarFinalizados"
       >
-        Limpiar entregados
+        Limpiar finalizados
       </button>
     </div>
 
