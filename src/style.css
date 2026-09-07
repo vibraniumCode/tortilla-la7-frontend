@@ -1,0 +1,25 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Bebas Neue", sans-serif;
+  --font-body: "Inter", sans-serif;
+
+  --color-carbon: #1c1917;
+  --color-brasa: #d9480f;
+  --color-brasa-dark: #a8330a;
+  --color-queso: #f2c14e;
+  --color-crema: #faf6f1;
+}
+
+@font-face {
+  font-family: "Bebas Neue";
+  src: url("https://fonts.gstatic.com/s/bebasneue/v14/JTUSjIg69CK48gW7PXoo9WlhyyTh89Y.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--color-carbon);
+  overflow-x: hidden;
+}
