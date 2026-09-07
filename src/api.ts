@@ -1,4 +1,10 @@
-const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:4000/api'
+const apiConfigurada = import.meta.env.VITE_API_URL?.trim()
+const API_URL =
+  apiConfigurada && /^https?:\/\//.test(apiConfigurada)
+    ? apiConfigurada.replace(/\/+$/, '')
+    : import.meta.env.PROD
+      ? 'https://tortilla-la7-backend.onrender.com/api'
+      : 'http://localhost:4000/api'
 const ASSET_URL = API_URL.replace(/\/api\/?$/, '')
 
 // Arma la URL completa de una imagen guardada por el backend
