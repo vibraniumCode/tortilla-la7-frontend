@@ -50,7 +50,12 @@ function limpiarEntregados() {
   const entregados = pedidos.value
     .filter((pedido) => pedido.estado === "entregado")
     .map((pedido) => pedido._id);
+  if (!entregados.length) return;
+
   pedidosOcultos.value = [...new Set([...pedidosOcultos.value, ...entregados])];
+  pedidos.value = pedidos.value.filter(
+    (pedido) => !entregados.includes(pedido._id),
+  );
   localStorage.setItem(
     CLAVE_PEDIDOS_OCULTOS,
     JSON.stringify(pedidosOcultos.value),
