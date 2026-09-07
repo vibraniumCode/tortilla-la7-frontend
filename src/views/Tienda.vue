@@ -24,7 +24,7 @@ onMounted(cargar);
     <main class="min-h-screen bg-carbon px-4 pb-28 pt-6">
       <header class="mb-5 flex items-center justify-between">
         <h1 class="font-display text-2xl tracking-wide text-crema">
-          Tortillas <span class="text-brasa">al Paso</span>
+          Parrilla <span class="text-brasa">La 7</span>
         </h1>
         <div class="relative flex items-center gap-3">
           <span class="font-body text-xs text-crema/50">

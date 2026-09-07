@@ -1,42 +1,49 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
-import { RouterLink, useRouter } from 'vue-router'
-import { useCatalog } from '@/store/catalog'
-import { useAuth } from '@/store/auth'
-import { api } from '@/api'
-import AdminTortillas from '@/components/admin/AdminTortillas.vue'
-import AdminPuestos from '@/components/admin/AdminPuestos.vue'
-import AdminZonas from '@/components/admin/AdminZonas.vue'
-import AdminNovedades from '@/components/admin/AdminNovedades.vue'
-import AdminPedidos from '@/components/admin/AdminPedidos.vue'
-import AdminEstadisticas from '@/components/admin/AdminEstadisticas.vue'
-import AdminConfiguracion from '@/components/admin/AdminConfiguracion.vue'
+import { ref, onMounted, onUnmounted } from "vue";
+import { RouterLink, useRouter } from "vue-router";
+import { useCatalog } from "@/store/catalog";
+import { useAuth } from "@/store/auth";
+import { api } from "@/api";
+import AdminTortillas from "@/components/admin/AdminTortillas.vue";
+import AdminPuestos from "@/components/admin/AdminPuestos.vue";
+import AdminZonas from "@/components/admin/AdminZonas.vue";
+import AdminNovedades from "@/components/admin/AdminNovedades.vue";
+import AdminPedidos from "@/components/admin/AdminPedidos.vue";
+import AdminEstadisticas from "@/components/admin/AdminEstadisticas.vue";
+import AdminConfiguracion from "@/components/admin/AdminConfiguracion.vue";
 
-type Tab = 'tortillas' | 'puestos' | 'zonas' | 'novedades' | 'pedidos' | 'estadisticas' | 'pagos'
+type Tab =
+  | "tortillas"
+  | "puestos"
+  | "zonas"
+  | "novedades"
+  | "pedidos"
+  | "estadisticas"
+  | "pagos";
 
-const tab = ref<Tab>('pedidos')
-const { cargar } = useCatalog()
-const { state: auth, logout } = useAuth()
-const router = useRouter()
+const tab = ref<Tab>("pedidos");
+const { cargar } = useCatalog();
+const { state: auth, logout } = useAuth();
+const router = useRouter();
 
-const pedidosPendientes = ref(0)
-let intervalo: ReturnType<typeof setInterval> | null = null
-let primerCheo = true
+const pedidosPendientes = ref(0);
+let intervalo: ReturnType<typeof setInterval> | null = null;
+let primerCheo = true;
 
 function sonarAviso() {
   try {
-    const Ctx = window.AudioContext || (window as any).webkitAudioContext
-    const ctx = new Ctx()
-    const gain = ctx.createGain()
-    gain.gain.setValueAtTime(0.15, ctx.currentTime)
-    gain.connect(ctx.destination)
-    ;[880, 1046].forEach((freq, i) => {
-      const osc = ctx.createOscillator()
-      osc.frequency.value = freq
-      osc.connect(gain)
-      osc.start(ctx.currentTime + i * 0.18)
-      osc.stop(ctx.currentTime + i * 0.18 + 0.15)
-    })
+    const Ctx = window.AudioContext || (window as any).webkitAudioContext;
+    const ctx = new Ctx();
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.15, ctx.currentTime);
+    gain.connect(ctx.destination);
+    [880, 1046].forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      osc.frequency.value = freq;
+      osc.connect(gain);
+      osc.start(ctx.currentTime + i * 0.18);
+      osc.stop(ctx.currentTime + i * 0.18 + 0.15);
+    });
   } catch {
     // si el navegador bloquea el audio (falta interacción previa), no pasa nada grave
   }
@@ -44,50 +51,52 @@ function sonarAviso() {
 
 async function chequearPedidosNuevos() {
   try {
-    const pedidos = await api.getPedidos()
-    const pendientes = pedidos.filter((p) => p.estado === 'pendiente').length
+    const pedidos = await api.getPedidos();
+    const pendientes = pedidos.filter((p) => p.estado === "pendiente").length;
     if (!primerCheo && pendientes > pedidosPendientes.value) {
-      sonarAviso()
+      sonarAviso();
     }
-    pedidosPendientes.value = pendientes
-    primerCheo = false
+    pedidosPendientes.value = pendientes;
+    primerCheo = false;
   } catch {
     // si falla el chequeo, se reintenta en el próximo intervalo
   }
 }
 
 onMounted(() => {
-  cargar()
-  chequearPedidosNuevos()
-  intervalo = setInterval(chequearPedidosNuevos, 20000)
-})
+  cargar();
+  chequearPedidosNuevos();
+  intervalo = setInterval(chequearPedidosNuevos, 20000);
+});
 
 onUnmounted(() => {
-  if (intervalo) clearInterval(intervalo)
-})
+  if (intervalo) clearInterval(intervalo);
+});
 
 function salir() {
-  logout()
-  router.push('/admin/login')
+  logout();
+  router.push("/admin/login");
 }
 
 const tabs: { id: Tab; label: string }[] = [
-  { id: 'pedidos', label: 'Pedidos' },
-  { id: 'estadisticas', label: 'Estadísticas' },
-  { id: 'tortillas', label: 'Tortillas' },
-  { id: 'puestos', label: 'Puestos de retiro' },
-  { id: 'zonas', label: 'Zonas de envío' },
-  { id: 'novedades', label: 'Novedades' },
-  { id: 'pagos', label: 'Pagos' },
-]
+  { id: "pedidos", label: "Pedidos" },
+  { id: "estadisticas", label: "Estadísticas" },
+  { id: "tortillas", label: "Tortillas" },
+  { id: "puestos", label: "Puestos de retiro" },
+  { id: "zonas", label: "Zonas de envío" },
+  { id: "novedades", label: "Novedades" },
+  { id: "pagos", label: "Pagos" },
+];
 </script>
 
 <template>
   <div class="min-h-screen bg-carbon px-4 py-6 sm:px-6 sm:py-8">
-    <header class="mb-6 flex flex-col gap-3 sm:mb-8 sm:flex-row sm:items-center sm:justify-between">
+    <header
+      class="mb-6 flex flex-col gap-3 sm:mb-8 sm:flex-row sm:items-center sm:justify-between"
+    >
       <div>
         <h1 class="font-display text-2xl tracking-wide text-crema sm:text-3xl">
-          Panel <span class="text-brasa">Tortillas al Paso</span>
+          Panel <span class="text-brasa">Parrilla La 7</span>
         </h1>
         <p class="mt-1 font-body text-xs text-crema/50 sm:text-sm">
           {{ auth.usuario?.nombre }}

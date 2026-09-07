@@ -1,30 +1,31 @@
 <script setup lang="ts">
-import { reactive, ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { useAuth } from '@/store/auth'
+import { reactive, ref } from "vue";
+import { useRouter } from "vue-router";
+import { useAuth } from "@/store/auth";
 
-const router = useRouter()
-const { state, login, logout } = useAuth()
+const router = useRouter();
+const { state, login, logout } = useAuth();
 
-const form = reactive({ email: '', password: '' })
-const error = ref('')
-const enviando = ref(false)
+const form = reactive({ email: "", password: "" });
+const error = ref("");
+const enviando = ref(false);
 
 async function entrar() {
-  error.value = ''
-  enviando.value = true
+  error.value = "";
+  enviando.value = true;
   try {
-    await login(form.email, form.password)
-    if (state.usuario?.rol !== 'admin') {
-      logout()
-      error.value = 'Esta cuenta no tiene permisos de administrador'
-      return
+    await login(form.email, form.password);
+    if (state.usuario?.rol !== "admin") {
+      logout();
+      error.value = "Esta cuenta no tiene permisos de administrador";
+      return;
     }
-    router.push('/admin')
+    router.push("/admin");
   } catch (err) {
-    error.value = err instanceof Error ? err.message : 'No se pudo iniciar sesión'
+    error.value =
+      err instanceof Error ? err.message : "No se pudo iniciar sesión";
   } finally {
-    enviando.value = false
+    enviando.value = false;
   }
 }
 </script>
@@ -33,7 +34,7 @@ async function entrar() {
   <div class="flex min-h-screen items-center justify-center bg-carbon px-6">
     <div class="w-full max-w-sm">
       <h1 class="text-center font-display text-3xl tracking-wide text-crema">
-        Panel <span class="text-brasa">Tortillas al Paso</span>
+        Panel <span class="text-brasa">Parrilla La 7</span>
       </h1>
       <p class="mt-1 text-center font-body text-sm text-crema/50">
         Acceso solo para administradores
@@ -62,7 +63,7 @@ async function entrar() {
           :disabled="enviando"
           @click="entrar"
         >
-          {{ enviando ? 'Entrando...' : 'Entrar' }}
+          {{ enviando ? "Entrando..." : "Entrar" }}
         </button>
       </div>
     </div>

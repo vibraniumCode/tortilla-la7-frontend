@@ -1,42 +1,42 @@
 <script setup lang="ts">
-import { reactive, ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { useAuth } from '@/store/auth'
+import { reactive, ref } from "vue";
+import { useRouter } from "vue-router";
+import { useAuth } from "@/store/auth";
 
-const router = useRouter()
-const { login, registro } = useAuth()
+const router = useRouter();
+const { login, registro } = useAuth();
 
-const modo = ref<'login' | 'registro'>('login')
-const error = ref('')
-const enviando = ref(false)
+const modo = ref<"login" | "registro">("login");
+const error = ref("");
+const enviando = ref(false);
 
 const form = reactive({
-  nombre: '',
-  email: '',
-  password: '',
-  telefono: '',
-})
+  nombre: "",
+  email: "",
+  password: "",
+  telefono: "",
+});
 
 async function enviar() {
-  error.value = ''
+  error.value = "";
 
-  if (modo.value === 'registro' && form.password.length < 6) {
-    error.value = 'La contraseña debe tener al menos 6 caracteres'
-    return
+  if (modo.value === "registro" && form.password.length < 6) {
+    error.value = "La contraseña debe tener al menos 6 caracteres";
+    return;
   }
 
-  enviando.value = true
+  enviando.value = true;
   try {
-    if (modo.value === 'login') {
-      await login(form.email, form.password)
+    if (modo.value === "login") {
+      await login(form.email, form.password);
     } else {
-      await registro(form.nombre, form.email, form.password, form.telefono)
+      await registro(form.nombre, form.email, form.password, form.telefono);
     }
-    router.push('/')
+    router.push("/");
   } catch (err) {
-    error.value = err instanceof Error ? err.message : 'Ocurrió un error'
+    error.value = err instanceof Error ? err.message : "Ocurrió un error";
   } finally {
-    enviando.value = false
+    enviando.value = false;
   }
 }
 </script>
@@ -45,7 +45,7 @@ async function enviar() {
   <div class="flex min-h-screen items-center justify-center bg-carbon px-6">
     <div class="w-full max-w-sm">
       <h1 class="text-center font-display text-3xl tracking-wide text-crema">
-        Tortillas <span class="text-brasa">al Paso</span>
+        Parrilla <span class="text-brasa">La 7</span>
       </h1>
 
       <div class="mt-6 flex rounded-full bg-white/[0.06] p-1">
@@ -101,7 +101,13 @@ async function enviar() {
           :disabled="enviando"
           @click="enviar"
         >
-          {{ enviando ? 'Un momento...' : modo === 'login' ? 'Entrar' : 'Crear cuenta' }}
+          {{
+            enviando
+              ? "Un momento..."
+              : modo === "login"
+                ? "Entrar"
+                : "Crear cuenta"
+          }}
         </button>
 
         <router-link

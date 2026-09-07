@@ -5,6 +5,16 @@ import { api, type Pedido, urlImagen } from "@/api";
 const pedidos = ref<Pedido[]>([]);
 const cargando = ref(false);
 const filtro = ref<"todos" | Pedido["estado"]>("todos");
+const CLAVE_PEDIDOS_OCULTOS = "admin-pedidos-ocultos";
+const pedidosOcultos = ref<string[]>(cargarPedidosOcultos());
+
+function cargarPedidosOcultos(): string[] {
+  try {
+    return JSON.parse(localStorage.getItem(CLAVE_PEDIDOS_OCULTOS) ?? "[]");
+  } catch {
+    return [];
+  }
+}
 
 const estados: { id: Pedido["estado"]; label: string }[] = [
   { id: "pendiente", label: "Pendiente" },
@@ -36,6 +46,17 @@ async function confirmarPago(p: Pedido) {
   p.pagoConfirmado = true;
 }
 
+function limpiarEntregados() {
+  const entregados = pedidos.value
+    .filter((pedido) => pedido.estado === "entregado")
+    .map((pedido) => pedido._id);
+  pedidosOcultos.value = [...new Set([...pedidosOcultos.value, ...entregados])];
+  localStorage.setItem(
+    CLAVE_PEDIDOS_OCULTOS,
+    JSON.stringify(pedidosOcultos.value),
+  );
+}
+
 function abrirComprobante(event: MouseEvent, ruta: string) {
   event.preventDefault();
   const ventana = window.open(urlImagen(ruta), "_blank", "noopener,noreferrer");
@@ -52,9 +73,10 @@ function fechaCorta(iso: string) {
 }
 
 const pedidosFiltrados = () =>
-  filtro.value === "todos"
+  (filtro.value === "todos"
     ? pedidos.value
-    : pedidos.value.filter((p) => p.estado === filtro.value);
+    : pedidos.value.filter((p) => p.estado === filtro.value)
+  ).filter((pedido) => !pedidosOcultos.value.includes(pedido._id));
 </script>
 
 <template>
@@ -93,6 +115,13 @@ const pedidosFiltrados = () =>
         @click="cargarPedidos"
       >
         Actualizar
+      </button>
+      <button
+        v-if="pedidos.some((pedido) => pedido.estado === 'entregado')"
+        class="shrink-0 rounded-full border border-crema/20 px-3 py-1.5 font-body text-xs text-crema/70"
+        @click="limpiarEntregados"
+      >
+        Limpiar entregados
       </button>
     </div>
 
