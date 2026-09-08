@@ -1,26 +1,45 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useCatalog } from '@/store/catalog'
+import { ref } from "vue";
+import { useCatalog } from "@/store/catalog";
+import { useCart } from "@/store/cart";
 
-const { state: catalogo } = useCatalog()
+const { state: catalogo } = useCatalog();
+const { state: carrito, agregar } = useCart();
 
-const actual = ref(0)
-const trackRef = ref<HTMLElement | null>(null)
-let startX = 0
+const actual = ref(0);
+const trackRef = ref<HTMLElement | null>(null);
+let startX = 0;
 
 function ir(i: number) {
-  if (catalogo.novedades.length === 0) return
-  actual.value = (i + catalogo.novedades.length) % catalogo.novedades.length
+  if (catalogo.novedades.length === 0) return;
+  actual.value = (i + catalogo.novedades.length) % catalogo.novedades.length;
 }
 
 function onTouchStart(e: TouchEvent) {
-  startX = e.touches[0].clientX
+  startX = e.touches[0].clientX;
 }
 
 function onTouchEnd(e: TouchEvent) {
-  const diff = e.changedTouches[0].clientX - startX
-  if (diff > 40) ir(actual.value - 1)
-  else if (diff < -40) ir(actual.value + 1)
+  const diff = e.changedTouches[0].clientX - startX;
+  if (diff > 40) ir(actual.value - 1);
+  else if (diff < -40) ir(actual.value + 1);
+}
+
+function ejecutarCta(slide: (typeof catalogo.novedades)[number]) {
+  if (slide.tortilla) {
+    const tortilla = catalogo.tortillas.find(
+      (item) => item._id === slide.tortilla,
+    );
+    if (tortilla) {
+      agregar(tortilla._id, tortilla.nombre, tortilla.precio);
+      carrito.abierto = true;
+      return;
+    }
+  }
+
+  document
+    .getElementById("zonas-envio")
+    ?.scrollIntoView({ behavior: "smooth" });
 }
 </script>
 
@@ -71,16 +90,22 @@ function onTouchEnd(e: TouchEvent) {
             {{ slide.titulo }}
           </h2>
 
-          <p class="relative z-10 mt-2 max-w-[62%] font-body text-sm text-crema/70">
+          <p
+            class="relative z-10 mt-2 max-w-[62%] font-body text-sm text-crema/70"
+          >
             {{ slide.descripcion }}
           </p>
 
           <div class="relative z-10 mt-5 flex items-center gap-3">
-            <span v-if="slide.precio" class="font-display text-2xl tracking-wide text-queso">
-              ${{ slide.precio.toLocaleString('es-AR') }}
+            <span
+              v-if="slide.precio"
+              class="font-display text-2xl tracking-wide text-queso"
+            >
+              ${{ slide.precio.toLocaleString("es-AR") }}
             </span>
             <button
               class="rounded-full bg-crema px-5 py-2.5 font-body text-sm font-bold text-carbon shadow-lg transition-transform active:scale-95"
+              @click="ejecutarCta(slide)"
             >
               {{ slide.cta }}
             </button>

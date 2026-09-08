@@ -106,7 +106,7 @@ onMounted(cargar);
       <template v-else>
         <HeroCarousel />
 
-        <section class="mt-7">
+        <section id="zonas-envio" class="mt-7">
           <ZoneSelector />
         </section>
 
