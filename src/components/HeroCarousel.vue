@@ -25,21 +25,18 @@ function onTouchEnd(e: TouchEvent) {
   else if (diff < -40) ir(actual.value + 1);
 }
 
-function ejecutarCta(slide: (typeof catalogo.novedades)[number]) {
-  if (slide.tortilla) {
-    const tortilla = catalogo.tortillas.find(
-      (item) => item._id === slide.tortilla,
-    );
-    if (tortilla) {
-      agregar(tortilla._id, tortilla.nombre, tortilla.precio);
-      carrito.abierto = true;
-      return;
-    }
-  }
+function tortillaDeSlide(slide: (typeof catalogo.novedades)[number]) {
+  return slide.tortilla
+    ? catalogo.tortillas.find((item) => item._id === slide.tortilla)
+    : undefined;
+}
 
-  document
-    .getElementById("zonas-envio")
-    ?.scrollIntoView({ behavior: "smooth" });
+function ejecutarCta(slide: (typeof catalogo.novedades)[number]) {
+  const tortilla = tortillaDeSlide(slide);
+  if (tortilla) {
+    agregar(tortilla._id, tortilla.nombre, tortilla.precio);
+    carrito.abierto = true;
+  }
 }
 </script>
 
@@ -104,6 +101,7 @@ function ejecutarCta(slide: (typeof catalogo.novedades)[number]) {
               ${{ slide.precio.toLocaleString("es-AR") }}
             </span>
             <button
+              v-if="tortillaDeSlide(slide)"
               class="rounded-full bg-crema px-5 py-2.5 font-body text-sm font-bold text-carbon shadow-lg transition-transform active:scale-95"
               @click="ejecutarCta(slide)"
             >
