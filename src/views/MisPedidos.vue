@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { RouterLink } from "vue-router";
-import { api, type Pedido, urlImagen } from "@/api";
+import { api, type Pedido, urlImagen, urlExterna } from "@/api";
 
 const pedidos = ref<Pedido[]>([]);
 const cargando = ref(true);
@@ -177,6 +177,22 @@ onMounted(async () => {
         >
           Todavía no informaste la transferencia
         </p>
+        <div
+          v-if="p.codigoReparto || p.linkUbicacion"
+          class="mt-3 rounded-xl bg-green-500/10 p-3 font-body text-xs text-green-300"
+        >
+          <p v-if="p.codigoReparto">
+            Código del repartidor: <strong>{{ p.codigoReparto }}</strong>
+          </p>
+          <a
+            v-if="p.linkUbicacion"
+            :href="urlExterna(p.linkUbicacion)"
+            target="_blank"
+            rel="noreferrer"
+            class="mt-1 inline-block text-queso underline"
+            >Ver ubicación del envío</a
+          >
+        </div>
         <div
           v-if="p.pago === 'transferencia' && !p.pagoConfirmado"
           class="mt-3 rounded-xl bg-white/4 p-3"

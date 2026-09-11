@@ -47,3 +47,20 @@ self.addEventListener("fetch", (event) => {
       ),
   );
 });
+
+self.addEventListener("push", (event) => {
+  const datos = event.data ? event.data.json() : {};
+  event.waitUntil(
+    self.registration.showNotification(datos.titulo || "Parrilla La 7", {
+      body: datos.cuerpo || "Tenés una actualización.",
+      icon: "/tortilla.png",
+      badge: "/tortilla.png",
+      data: { url: datos.url || "/" },
+    }),
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  event.waitUntil(clients.openWindow(event.notification.data?.url || "/"));
+});

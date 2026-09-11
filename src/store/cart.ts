@@ -1,6 +1,7 @@
 import { reactive, computed, watch } from 'vue'
 import { api } from '@/api'
 import { useCatalog } from './catalog'
+import { useAuth } from './auth'
 
 export interface ItemCarrito {
   id: string
@@ -30,9 +31,11 @@ const state = reactive({
   items: (guardado?.items ?? []) as ItemCarrito[],
   entrega: (guardado?.entrega ?? 'envio') as Entrega,
   zonaId: (guardado?.zonaId ?? '') as string,
+  localidad: guardado?.localidad ?? '',
   puestoId: (guardado?.puestoId ?? '') as string,
   pago: (guardado?.pago ?? 'efectivo') as Pago,
   direccion: guardado?.direccion ?? '',
+  horarioEntrega: guardado?.horarioEntrega ?? '',
   comentario: guardado?.comentario ?? '',
   montoEfectivo: (guardado?.montoEfectivo ?? null) as number | null,
   abierto: false,
@@ -49,9 +52,11 @@ watch(
     items: state.items,
     entrega: state.entrega,
     zonaId: state.zonaId,
+    localidad: state.localidad,
     puestoId: state.puestoId,
     pago: state.pago,
     direccion: state.direccion,
+    horarioEntrega: state.horarioEntrega,
     comentario: state.comentario,
     montoEfectivo: state.montoEfectivo,
   }),
@@ -108,6 +113,7 @@ const vuelto = computed(() => {
 
 async function confirmarPedido() {
   state.error = ''
+  const { state: auth } = useAuth()
 
   if (state.entrega === 'envio' && !state.direccion.trim()) {
     state.error = 'Falta la dirección para el envío'
@@ -115,6 +121,18 @@ async function confirmarPedido() {
   }
   if (state.entrega === 'envio' && !state.zonaId) {
     state.error = 'Elegí una zona de envío'
+    return
+  }
+  if (state.entrega === 'envio' && !state.localidad.trim()) {
+    state.error = 'Falta la localidad para el envío'
+    return
+  }
+  if (state.entrega === 'envio' && state.pago !== 'transferencia') {
+    state.error = 'Los envíos a domicilio solo aceptan transferencia'
+    return
+  }
+  if (state.entrega === 'envio' && auth.usuario?.puedeElegirHorario && !state.horarioEntrega) {
+    state.error = 'Elegí un horario de entrega'
     return
   }
   if (state.entrega === 'retiro' && !state.puestoId) {
@@ -141,8 +159,13 @@ async function confirmarPedido() {
       })),
       entrega: state.entrega,
       zona: state.entrega === 'envio' ? state.zonaId : undefined,
+      localidad: state.entrega === 'envio' ? state.localidad : undefined,
       puesto: state.entrega === 'retiro' ? state.puestoId : undefined,
       direccion: state.entrega === 'envio' ? state.direccion : undefined,
+      horarioEntrega:
+        state.entrega === 'envio' && auth.usuario?.puedeElegirHorario
+          ? state.horarioEntrega || undefined
+          : undefined,
       comentario: state.comentario || undefined,
       pago: state.pago,
       montoEfectivo: state.pago === 'efectivo' ? state.montoEfectivo ?? undefined : undefined,
@@ -152,6 +175,8 @@ async function confirmarPedido() {
     state.confirmado = true
     state.items = []
     state.direccion = ''
+    state.localidad = ''
+    state.horarioEntrega = ''
     state.comentario = ''
     state.montoEfectivo = null
     localStorage.removeItem(CLAVE_STORAGE)

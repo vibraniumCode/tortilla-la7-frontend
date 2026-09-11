@@ -11,6 +11,7 @@ import AdminNovedades from "@/components/admin/AdminNovedades.vue";
 import AdminPedidos from "@/components/admin/AdminPedidos.vue";
 import AdminEstadisticas from "@/components/admin/AdminEstadisticas.vue";
 import AdminConfiguracion from "@/components/admin/AdminConfiguracion.vue";
+import NotificationButton from "@/components/NotificationButton.vue";
 
 type Tab =
   | "tortillas"
@@ -103,6 +104,7 @@ const tabs: { id: Tab; label: string }[] = [
         </p>
       </div>
       <div class="flex items-center gap-2">
+        <NotificationButton />
         <RouterLink
           to="/"
           class="rounded-full border border-crema/20 px-3 py-1.5 font-body text-xs text-crema/70 sm:px-4 sm:py-2 sm:text-sm"

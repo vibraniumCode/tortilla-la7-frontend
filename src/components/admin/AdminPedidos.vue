@@ -7,6 +7,9 @@ const cargando = ref(false);
 const filtro = ref<"todos" | Pedido["estado"]>("todos");
 const CLAVE_PEDIDOS_OCULTOS = "admin-pedidos-ocultos";
 const pedidosOcultos = ref<string[]>(cargarPedidosOcultos());
+const seguimientoId = ref("");
+const codigoReparto = ref("");
+const linkUbicacion = ref("");
 
 function cargarPedidosOcultos(): string[] {
   try {
@@ -44,6 +47,22 @@ async function cambiarEstado(p: Pedido, estado: Pedido["estado"]) {
 async function confirmarPago(p: Pedido) {
   await api.confirmarPago(p._id);
   p.pagoConfirmado = true;
+}
+
+function abrirSeguimiento(p: Pedido) {
+  seguimientoId.value = p._id;
+  codigoReparto.value = p.codigoReparto ?? "";
+  linkUbicacion.value = p.linkUbicacion ?? "";
+}
+
+async function guardarSeguimiento(p: Pedido) {
+  const actualizado = await api.actualizarSeguimiento(p._id, {
+    codigoReparto: codigoReparto.value,
+    linkUbicacion: linkUbicacion.value,
+  });
+  p.codigoReparto = actualizado.codigoReparto;
+  p.linkUbicacion = actualizado.linkUbicacion;
+  seguimientoId.value = "";
 }
 
 function limpiarFinalizados() {
@@ -190,7 +209,10 @@ const pedidosFiltrados = () =>
         </ul>
 
         <p v-if="p.direccion" class="mt-2 font-body text-xs text-crema/50">
-          📍 {{ p.direccion }}
+          📍 {{ p.localidad ? `${p.localidad}, ` : "" }}{{ p.direccion }}
+        </p>
+        <p v-if="p.horarioEntrega" class="mt-1 font-body text-xs text-crema/50">
+          Horario solicitado: {{ p.horarioEntrega }}
         </p>
         <p v-if="p.comentario" class="mt-1 font-body text-xs text-crema/50">
           💬 {{ p.comentario }}
@@ -264,6 +286,34 @@ const pedidosFiltrados = () =>
             @click="cambiarEstado(p, e.id)"
           >
             {{ e.label }}
+          </button>
+        </div>
+        <button
+          v-if="p.entrega === 'envio'"
+          class="mt-3 rounded-full border border-queso/40 px-3 py-1.5 font-body text-xs text-queso"
+          @click="abrirSeguimiento(p)"
+        >
+          Datos para repartidor
+        </button>
+        <div
+          v-if="seguimientoId === p._id"
+          class="mt-2 flex flex-col gap-2 rounded-xl bg-white/4 p-3"
+        >
+          <input
+            v-model="codigoReparto"
+            placeholder="Código para Uber Moto"
+            class="rounded-lg bg-white/6 px-3 py-2 font-body text-xs text-crema"
+          />
+          <input
+            v-model="linkUbicacion"
+            placeholder="Link de ubicación"
+            class="rounded-lg bg-white/6 px-3 py-2 font-body text-xs text-crema"
+          />
+          <button
+            class="rounded-full bg-brasa px-3 py-1.5 font-body text-xs font-bold text-crema"
+            @click="guardarSeguimiento(p)"
+          >
+            Guardar seguimiento
           </button>
         </div>
       </div>

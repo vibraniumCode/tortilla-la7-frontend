@@ -127,7 +127,10 @@ function cerrar() {
                   ? 'border-brasa bg-brasa text-crema'
                   : 'border-crema/15 text-crema/70'
               "
-              @click="state.entrega = 'envio'"
+              @click="
+                state.entrega = 'envio';
+                state.pago = 'transferencia';
+              "
             >
               Envío a domicilio
             </button>
@@ -153,6 +156,18 @@ function cerrar() {
               type="text"
               placeholder="Calle, número, piso/depto"
               class="mt-3 w-full rounded-xl bg-white/[0.06] px-4 py-3 font-body text-sm text-crema placeholder:text-crema/30 focus:outline-none focus:ring-2 focus:ring-brasa"
+            />
+            <input
+              v-model="state.localidad"
+              type="text"
+              placeholder="Localidad"
+              class="mt-2 w-full rounded-xl bg-white/[0.06] px-4 py-3 font-body text-sm text-crema placeholder:text-crema/30 focus:outline-none focus:ring-2 focus:ring-brasa"
+            />
+            <input
+              v-if="auth.usuario?.puedeElegirHorario"
+              v-model="state.horarioEntrega"
+              type="time"
+              class="mt-3 w-full rounded-xl bg-white/[0.06] px-4 py-3 font-body text-sm text-crema focus:outline-none focus:ring-2 focus:ring-brasa"
             />
           </template>
 
@@ -188,6 +203,7 @@ function cerrar() {
           </h3>
           <div class="mt-2 grid grid-cols-2 gap-2">
             <button
+              v-if="state.entrega === 'retiro'"
               class="rounded-xl border px-3 py-2.5 font-body text-sm font-medium transition-colors"
               :class="
                 state.pago === 'efectivo'

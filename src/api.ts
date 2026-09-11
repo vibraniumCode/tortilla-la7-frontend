@@ -15,6 +15,12 @@ export function urlImagen(ruta: string): string {
   return `${ASSET_URL}${ruta.startsWith('/') ? ruta : `/${ruta}`}`
 }
 
+export function urlExterna(ruta: string): string {
+  const valor = ruta.trim()
+  if (!valor) return ''
+  return /^https?:\/\//i.test(valor) ? valor : `https://${valor}`
+}
+
 export interface Tortilla {
   _id: string
   nombre: string
@@ -22,6 +28,7 @@ export interface Tortilla {
   precio: number
   imagen: string
   nueva?: boolean
+  puestosDisponibles?: string[]
 }
 
 export interface Zona {
@@ -44,6 +51,8 @@ export interface Novedad {
   cta: string
   precio?: number
   tortilla?: string
+  fondo?: string
+  colorTitulo?: string
   orden: number
   activa: boolean
 }
@@ -59,8 +68,10 @@ export interface NuevoPedido {
   items: ItemPedido[]
   entrega: 'envio' | 'retiro'
   zona?: string
+  localidad?: string
   puesto?: string
   direccion?: string
+  horarioEntrega?: string
   comentario?: string
   pago: 'efectivo' | 'transferencia'
   montoEfectivo?: number
@@ -71,8 +82,10 @@ export interface Pedido {
   items: ItemPedido[]
   entrega: 'envio' | 'retiro'
   zona?: Zona
+  localidad?: string
   puesto?: Puesto
   direccion?: string
+  horarioEntrega?: string
   comentario?: string
   pago: 'efectivo' | 'transferencia'
   montoEfectivo?: number
@@ -80,6 +93,8 @@ export interface Pedido {
   transferenciaInformada: boolean
   transferenciaTitular?: string
   comprobanteTransferencia?: string
+  codigoReparto?: string
+  linkUbicacion?: string
   subtotal: number
   costoEnvio: number
   total: number
@@ -110,6 +125,7 @@ export interface Usuario {
   nombre: string
   email: string
   rol: 'cliente' | 'admin'
+  puedeElegirHorario?: boolean
 }
 
 export interface Sesion {
@@ -145,12 +161,27 @@ export const api = {
     pedir<Sesion>('/auth/login', { method: 'POST', body: JSON.stringify(data) }),
   me: () => pedir<Usuario>('/auth/me'),
 
+  // Notificaciones push
+  clavePublicaNotificaciones: () =>
+    pedir<{ configurada: boolean; clave: string }>('/notificaciones/clave-publica'),
+  guardarSuscripcion: (suscripcion: PushSubscriptionJSON) =>
+    pedir<void>('/notificaciones/suscripcion', {
+      method: 'POST',
+      body: JSON.stringify(suscripcion),
+    }),
+
   // Tortillas
   getTortillas: () => pedir<Tortilla[]>('/tortillas'),
+  getTortillasTodas: () => pedir<Tortilla[]>('/tortillas/todas'),
   crearTortilla: (data: Partial<Tortilla>) =>
     pedir<Tortilla>('/tortillas', { method: 'POST', body: JSON.stringify(data) }),
   editarTortilla: (id: string, data: Partial<Tortilla>) =>
     pedir<Tortilla>(`/tortillas/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  cambiarDisponibilidadPuesto: (id: string, puestoId: string, habilitada: boolean) =>
+    pedir<Tortilla>(`/tortillas/${id}/puestos/${puestoId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ habilitada }),
+    }),
   borrarTortilla: (id: string) => pedir(`/tortillas/${id}`, { method: 'DELETE' }),
 
   // Zonas
@@ -185,6 +216,8 @@ export const api = {
   getEstadisticas: () => pedir<Estadisticas>('/pedidos/estadisticas'),
   cambiarEstadoPedido: (id: string, estado: Pedido['estado']) =>
     pedir<Pedido>(`/pedidos/${id}/estado`, { method: 'PUT', body: JSON.stringify({ estado }) }),
+  actualizarSeguimiento: (id: string, data: { codigoReparto?: string; linkUbicacion?: string }) =>
+    pedir<Pedido>(`/pedidos/${id}/seguimiento`, { method: 'PUT', body: JSON.stringify(data) }),
   informarTransferencia: async (id: string, titular: string, comprobante?: File) => {
     const token = localStorage.getItem('token')
     const formData = new FormData()

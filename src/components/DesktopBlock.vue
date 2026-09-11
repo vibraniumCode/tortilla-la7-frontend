@@ -1,27 +1,29 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted } from "vue";
 
-const isDesktop = ref(false)
+const isDesktop = ref(false);
+const listo = ref(false);
 
 function checkScreen() {
-  isDesktop.value = window.innerWidth >= 768
+  isDesktop.value = window.matchMedia("(min-width: 768px)").matches;
+  listo.value = true;
 }
 
 onMounted(() => {
-  checkScreen()
-  window.addEventListener('resize', checkScreen)
-})
+  checkScreen();
+  window.addEventListener("resize", checkScreen);
+});
 
 onUnmounted(() => {
-  window.removeEventListener('resize', checkScreen)
-})
+  window.removeEventListener("resize", checkScreen);
+});
 
-defineExpose({ isDesktop })
+defineExpose({ isDesktop });
 </script>
 
 <template>
   <div
-    v-if="isDesktop"
+    v-if="listo && isDesktop"
     class="fixed inset-0 z-50 flex flex-col items-center justify-center gap-3 bg-carbon px-8 text-center"
   >
     <span class="font-display text-6xl tracking-wide text-queso">📱</span>
@@ -33,5 +35,5 @@ defineExpose({ isDesktop })
       dispositivo móvil.
     </p>
   </div>
-  <slot v-else />
+  <slot v-else-if="listo" />
 </template>

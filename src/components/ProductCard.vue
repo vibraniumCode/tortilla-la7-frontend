@@ -1,27 +1,27 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { urlImagen, type Tortilla } from '@/api'
-import { useCart } from '@/store/cart'
+import { computed } from "vue";
+import { urlImagen, type Tortilla } from "@/api";
+import { useCart } from "@/store/cart";
 
-const props = defineProps<{ tortilla: Tortilla }>()
-const { state, agregar, setCantidad } = useCart()
+const props = defineProps<{ tortilla: Tortilla }>();
+const { state, agregar, setCantidad } = useCart();
 
 const enCarrito = computed(() =>
   state.items.find((i) => i.id === props.tortilla._id),
-)
+);
 
-const cantidad = computed(() => enCarrito.value?.cantidad ?? 0)
+const cantidad = computed(() => enCarrito.value?.cantidad ?? 0);
 
 function sumar() {
   if (cantidad.value === 0) {
-    agregar(props.tortilla._id, props.tortilla.nombre, props.tortilla.precio)
+    agregar(props.tortilla._id, props.tortilla.nombre, props.tortilla.precio);
   } else {
-    setCantidad(props.tortilla._id, cantidad.value + 1)
+    setCantidad(props.tortilla._id, cantidad.value + 1);
   }
 }
 
 function restar() {
-  setCantidad(props.tortilla._id, cantidad.value - 1)
+  setCantidad(props.tortilla._id, cantidad.value - 1);
 }
 </script>
 
@@ -53,7 +53,7 @@ function restar() {
 
       <div class="mt-2 flex items-center justify-between">
         <span class="font-display text-base tracking-wide text-queso">
-          ${{ tortilla.precio.toLocaleString('es-AR') }}
+          ${{ tortilla.precio.toLocaleString("es-AR") }}
         </span>
 
         <div v-if="cantidad === 0">
@@ -64,14 +64,19 @@ function restar() {
             Agregar
           </button>
         </div>
-        <div v-else class="flex items-center gap-3 rounded-full bg-carbon px-1 py-1">
+        <div
+          v-else
+          class="flex items-center gap-3 rounded-full bg-carbon px-1 py-1"
+        >
           <button
             class="flex h-6 w-6 items-center justify-center rounded-full bg-white/10 font-body text-crema"
             @click="restar"
           >
             −
           </button>
-          <span class="w-4 text-center font-body text-sm text-crema">{{ cantidad }}</span>
+          <span class="w-4 text-center font-body text-sm text-crema">{{
+            cantidad
+          }}</span>
           <button
             class="flex h-6 w-6 items-center justify-center rounded-full bg-brasa font-body text-crema"
             @click="sumar"

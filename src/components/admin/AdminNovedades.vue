@@ -1,63 +1,92 @@
 <script setup lang="ts">
-import { reactive, ref, onMounted } from 'vue'
-import { api, type Novedad } from '@/api'
+import { reactive, ref, onMounted } from "vue";
+import { api, type Novedad } from "@/api";
 
-const novedades = ref<Novedad[]>([])
-const cargando = ref(false)
-const editando = ref<string | null>(null)
-const guardando = ref(false)
-const error = ref('')
+const novedades = ref<Novedad[]>([]);
+const cargando = ref(false);
+const editando = ref<string | null>(null);
+const guardando = ref(false);
+const subiendoFondo = ref(false);
+const error = ref("");
 
 const form = reactive({
-  eyebrow: '',
-  titulo: '',
-  descripcion: '',
-  cta: 'Pedir ahora',
+  eyebrow: "",
+  titulo: "",
+  descripcion: "",
+  cta: "Pedir ahora",
   precio: 0,
+  fondoColor: "#0072f5",
+  fondoImagen: "",
+  colorTitulo: "#FAF6F1",
   orden: 1,
   activa: true,
-})
+});
 
 async function cargarNovedades() {
-  cargando.value = true
+  cargando.value = true;
   try {
-    novedades.value = await api.getNovedadesTodas()
+    novedades.value = await api.getNovedadesTodas();
   } finally {
-    cargando.value = false
+    cargando.value = false;
   }
 }
 
-onMounted(cargarNovedades)
+onMounted(cargarNovedades);
 
 function limpiar() {
-  editando.value = null
-  form.eyebrow = ''
-  form.titulo = ''
-  form.descripcion = ''
-  form.cta = 'Pedir ahora'
-  form.precio = 0
-  form.orden = novedades.value.length + 1
-  form.activa = true
+  editando.value = null;
+  form.eyebrow = "";
+  form.titulo = "";
+  form.descripcion = "";
+  form.cta = "Pedir ahora";
+  form.precio = 0;
+  form.fondoColor = "#0072f5";
+  form.fondoImagen = "";
+  form.colorTitulo = "#FAF6F1";
+  form.orden = novedades.value.length + 1;
+  form.activa = true;
 }
 
 function editar(n: Novedad) {
-  editando.value = n._id
-  form.eyebrow = n.eyebrow
-  form.titulo = n.titulo
-  form.descripcion = n.descripcion
-  form.cta = n.cta
-  form.precio = n.precio ?? 0
-  form.orden = n.orden
-  form.activa = n.activa
+  editando.value = n._id;
+  form.eyebrow = n.eyebrow;
+  form.titulo = n.titulo;
+  form.descripcion = n.descripcion;
+  form.cta = n.cta;
+  form.precio = n.precio ?? 0;
+  form.fondoImagen =
+    n.fondo?.startsWith("http") || n.fondo?.startsWith("/") ? n.fondo : "";
+  form.fondoColor = /^#[0-9a-f]{6}$/i.test(n.fondo ?? "")
+    ? n.fondo!
+    : "#0072f5";
+  form.colorTitulo = n.colorTitulo || "#FAF6F1";
+  form.orden = n.orden;
+  form.activa = n.activa;
+}
+
+async function seleccionarFondo(event: Event) {
+  const archivo = (event.target as HTMLInputElement).files?.[0];
+  if (!archivo) return;
+  subiendoFondo.value = true;
+  error.value = "";
+  try {
+    const { url } = await api.subirImagen(archivo);
+    form.fondoImagen = url;
+  } catch (err) {
+    error.value =
+      err instanceof Error ? err.message : "No se pudo subir el fondo";
+  } finally {
+    subiendoFondo.value = false;
+  }
 }
 
 async function guardar() {
   if (!form.eyebrow.trim() || !form.titulo.trim() || !form.descripcion.trim()) {
-    error.value = 'Completá etiqueta, título y descripción'
-    return
+    error.value = "Completá etiqueta, título y descripción";
+    return;
   }
-  error.value = ''
-  guardando.value = true
+  error.value = "";
+  guardando.value = true;
   try {
     const data = {
       eyebrow: form.eyebrow,
@@ -65,27 +94,29 @@ async function guardar() {
       descripcion: form.descripcion,
       cta: form.cta,
       precio: form.precio || undefined,
+      fondo: form.fondoImagen || form.fondoColor,
+      colorTitulo: form.colorTitulo,
       orden: form.orden,
       activa: form.activa,
-    }
+    };
     if (editando.value) {
-      await api.editarNovedad(editando.value, data)
+      await api.editarNovedad(editando.value, data);
     } else {
-      await api.crearNovedad(data)
+      await api.crearNovedad(data);
     }
-    limpiar()
-    await cargarNovedades()
+    limpiar();
+    await cargarNovedades();
   } catch (err) {
-    error.value = err instanceof Error ? err.message : 'No se pudo guardar'
+    error.value = err instanceof Error ? err.message : "No se pudo guardar";
   } finally {
-    guardando.value = false
+    guardando.value = false;
   }
 }
 
 async function borrar(id: string) {
-  if (!confirm('¿Quitar esta novedad del carousel?')) return
-  await api.borrarNovedad(id)
-  await cargarNovedades()
+  if (!confirm("¿Eliminar definitivamente esta novedad del carousel?")) return;
+  await api.borrarNovedad(id);
+  await cargarNovedades();
 }
 </script>
 
@@ -93,7 +124,7 @@ async function borrar(id: string) {
   <div class="grid gap-6 md:grid-cols-2">
     <div class="rounded-2xl bg-white/[0.04] p-5">
       <h3 class="font-display text-xl tracking-wide text-crema">
-        {{ editando ? 'Editar novedad' : 'Nueva novedad (slide del carousel)' }}
+        {{ editando ? "Editar novedad" : "Nueva novedad (slide del carousel)" }}
       </h3>
 
       <div class="mt-4 flex flex-col gap-3">
@@ -128,6 +159,58 @@ async function borrar(id: string) {
           placeholder="Precio (opcional, dejar 0 para no mostrar)"
           class="rounded-xl bg-white/[0.06] px-4 py-2.5 font-body text-sm text-crema placeholder:text-crema/30 focus:outline-none focus:ring-2 focus:ring-brasa"
         />
+        <div class="rounded-xl bg-white/[0.06] p-3">
+          <p class="font-body text-xs text-crema/60">Fondo del carousel</p>
+          <div class="mt-2 flex items-center gap-3">
+            <input
+              v-model="form.fondoColor"
+              type="color"
+              class="h-10 w-14 cursor-pointer rounded-lg border-0 bg-transparent"
+            />
+            <span class="font-body text-xs text-crema/60">Elegir color</span>
+          </div>
+          <label
+            class="mt-3 block cursor-pointer font-body text-xs text-crema/70"
+          >
+            {{
+              subiendoFondo
+                ? "Subiendo imagen..."
+                : form.fondoImagen
+                  ? "Cambiar imagen de fondo"
+                  : "Agregar imagen de fondo"
+            }}
+            <input
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
+              class="mt-2 block w-full text-xs text-crema/50"
+              :disabled="subiendoFondo"
+              @change="seleccionarFondo"
+            />
+          </label>
+          <button
+            v-if="form.fondoImagen"
+            type="button"
+            class="mt-2 font-body text-xs text-red-300 underline"
+            @click="form.fondoImagen = ''"
+          >
+            Usar solo el color
+          </button>
+        </div>
+        <div
+          class="flex items-center justify-between rounded-xl bg-white/[0.06] p-3"
+        >
+          <div>
+            <p class="font-body text-xs text-crema/60">Color del título</p>
+            <p class="mt-1 font-body text-[11px] text-crema/40">
+              Elegí el color del título principal.
+            </p>
+          </div>
+          <input
+            v-model="form.colorTitulo"
+            type="color"
+            class="h-10 w-14 cursor-pointer rounded-lg border-0 bg-transparent"
+          />
+        </div>
         <input
           v-model.number="form.orden"
           type="number"
@@ -148,7 +231,13 @@ async function borrar(id: string) {
             :disabled="guardando"
             @click="guardar"
           >
-            {{ guardando ? 'Guardando...' : editando ? 'Guardar cambios' : 'Crear novedad' }}
+            {{
+              guardando
+                ? "Guardando..."
+                : editando
+                  ? "Guardar cambios"
+                  : "Crear novedad"
+            }}
           </button>
           <button
             v-if="editando"
@@ -162,7 +251,9 @@ async function borrar(id: string) {
     </div>
 
     <div class="flex flex-col gap-2">
-      <div v-if="cargando" class="font-body text-sm text-crema/40">Cargando...</div>
+      <div v-if="cargando" class="font-body text-sm text-crema/40">
+        Cargando...
+      </div>
       <div
         v-for="n in novedades"
         :key="n._id"
@@ -170,11 +261,18 @@ async function borrar(id: string) {
         :class="{ 'opacity-40': !n.activa }"
       >
         <div class="min-w-0">
-          <p class="font-body text-[10px] uppercase tracking-widest text-crema/40">
-            {{ n.eyebrow }} · orden {{ n.orden }} {{ !n.activa ? '· oculta' : '' }}
+          <p
+            class="font-body text-[10px] uppercase tracking-widest text-crema/40"
+          >
+            {{ n.eyebrow }} · orden {{ n.orden }}
+            {{ !n.activa ? "· oculta" : "" }}
           </p>
-          <p class="truncate font-display text-lg tracking-wide text-crema">{{ n.titulo }}</p>
-          <p class="truncate font-body text-xs text-crema/50">{{ n.descripcion }}</p>
+          <p class="truncate font-display text-lg tracking-wide text-crema">
+            {{ n.titulo }}
+          </p>
+          <p class="truncate font-body text-xs text-crema/50">
+            {{ n.descripcion }}
+          </p>
         </div>
         <div class="flex shrink-0 gap-2">
           <button
@@ -187,7 +285,7 @@ async function borrar(id: string) {
             class="flex-1 rounded-full border border-red-400/30 px-3 py-1.5 font-body text-xs text-red-400 sm:flex-none"
             @click="borrar(n._id)"
           >
-            Ocultar
+            Eliminar
           </button>
         </div>
       </div>
