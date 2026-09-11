@@ -18,7 +18,7 @@ async function activar() {
   try {
     await activarNotificaciones();
     activas.value = true;
-    mensaje.value = "Notificaciones activadas";
+    mensaje.value = "";
   } catch (error) {
     activas.value = false;
     mensaje.value =

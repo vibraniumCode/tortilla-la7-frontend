@@ -121,13 +121,13 @@ async function borrar(id: string) {
 </script>
 
 <template>
-  <div class="grid gap-6 md:grid-cols-2">
-    <div class="rounded-2xl bg-white/[0.04] p-5">
-      <h3 class="font-display text-xl tracking-wide text-crema">
+  <div class="grid min-w-0 gap-6 overflow-hidden md:grid-cols-2">
+    <div class="min-w-0 rounded-2xl bg-white/[0.04] p-4 sm:p-5">
+      <h3 class="break-words font-display text-xl tracking-wide text-crema">
         {{ editando ? "Editar novedad" : "Nueva novedad (slide del carousel)" }}
       </h3>
 
-      <div class="mt-4 flex flex-col gap-3">
+      <div class="mt-4 flex min-w-0 flex-col gap-3">
         <input
           v-model="form.eyebrow"
           type="text"
@@ -182,7 +182,7 @@ async function borrar(id: string) {
             <input
               type="file"
               accept="image/png,image/jpeg,image/webp"
-              class="mt-2 block w-full text-xs text-crema/50"
+              class="mt-2 block w-full max-w-full min-w-0 text-xs text-crema/50"
               :disabled="subiendoFondo"
               @change="seleccionarFondo"
             />
@@ -250,39 +250,39 @@ async function borrar(id: string) {
       </div>
     </div>
 
-    <div class="flex flex-col gap-2">
+    <div class="min-w-0 flex flex-col gap-2">
       <div v-if="cargando" class="font-body text-sm text-crema/40">
         Cargando...
       </div>
       <div
         v-for="n in novedades"
         :key="n._id"
-        class="flex flex-col gap-3 rounded-xl bg-white/[0.04] p-4 sm:flex-row sm:items-center sm:justify-between"
+        class="flex min-w-0 flex-col gap-3 rounded-xl bg-white/[0.04] p-4 sm:flex-row sm:items-center sm:justify-between"
         :class="{ 'opacity-40': !n.activa }"
       >
-        <div class="min-w-0">
+        <div class="min-w-0 max-w-full">
           <p
             class="font-body text-[10px] uppercase tracking-widest text-crema/40"
           >
             {{ n.eyebrow }} · orden {{ n.orden }}
             {{ !n.activa ? "· oculta" : "" }}
           </p>
-          <p class="truncate font-display text-lg tracking-wide text-crema">
+          <p class="break-words font-display text-lg tracking-wide text-crema">
             {{ n.titulo }}
           </p>
-          <p class="truncate font-body text-xs text-crema/50">
+          <p class="break-words font-body text-xs text-crema/50">
             {{ n.descripcion }}
           </p>
         </div>
-        <div class="flex shrink-0 gap-2">
+        <div class="flex w-full shrink-0 gap-2 sm:w-auto">
           <button
-            class="flex-1 rounded-full border border-crema/20 px-3 py-1.5 font-body text-xs text-crema/70 sm:flex-none"
+            class="min-w-0 flex-1 rounded-full border border-crema/20 px-3 py-1.5 font-body text-xs text-crema/70 sm:flex-none"
             @click="editar(n)"
           >
             Editar
           </button>
           <button
-            class="flex-1 rounded-full border border-red-400/30 px-3 py-1.5 font-body text-xs text-red-400 sm:flex-none"
+            class="min-w-0 flex-1 rounded-full border border-red-400/30 px-3 py-1.5 font-body text-xs text-red-400 sm:flex-none"
             @click="borrar(n._id)"
           >
             Eliminar

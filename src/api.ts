@@ -191,6 +191,7 @@ export const api = {
     pedir<Zona>('/zonas', { method: 'POST', body: JSON.stringify(data) }),
   editarZona: (id: string, data: Partial<Zona>) =>
     pedir<Zona>(`/zonas/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  borrarZona: (id: string) => pedir(`/zonas/${id}`, { method: 'DELETE' }),
 
   // Puestos
   getPuestos: () => pedir<Puesto[]>('/puestos'),

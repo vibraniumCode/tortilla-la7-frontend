@@ -1,50 +1,68 @@
 <script setup lang="ts">
-import { reactive, ref } from 'vue'
-import { api, type Zona } from '@/api'
-import { useCatalog } from '@/store/catalog'
+import { reactive, ref } from "vue";
+import { api, type Zona } from "@/api";
+import { useCatalog } from "@/store/catalog";
 
-const { state: catalogo, cargar } = useCatalog()
+const { state: catalogo, cargar } = useCatalog();
 
-const editando = ref<string | null>(null)
-const guardando = ref(false)
-const error = ref('')
+const editando = ref<string | null>(null);
+const guardando = ref(false);
+const error = ref("");
 
 const form = reactive({
-  nombre: '',
+  nombre: "",
   envio: 0,
-})
+});
 
 function limpiar() {
-  editando.value = null
-  form.nombre = ''
-  form.envio = 0
+  editando.value = null;
+  form.nombre = "";
+  form.envio = 0;
 }
 
 function editar(z: Zona) {
-  editando.value = z._id
-  form.nombre = z.nombre
-  form.envio = z.envio
+  editando.value = z._id;
+  form.nombre = z.nombre;
+  form.envio = z.envio;
 }
 
 async function guardar() {
   if (!form.nombre.trim() || form.envio < 0) {
-    error.value = 'Completá nombre y un costo de envío válido'
-    return
+    error.value = "Completá nombre y un costo de envío válido";
+    return;
   }
-  error.value = ''
-  guardando.value = true
+  error.value = "";
+  guardando.value = true;
   try {
     if (editando.value) {
-      await api.editarZona(editando.value, { ...form })
+      await api.editarZona(editando.value, { ...form });
     } else {
-      await api.crearZona({ ...form })
+      await api.crearZona({ ...form });
     }
-    limpiar()
-    await cargar()
+    limpiar();
+    await cargar();
   } catch (err) {
-    error.value = err instanceof Error ? err.message : 'No se pudo guardar'
+    error.value = err instanceof Error ? err.message : "No se pudo guardar";
   } finally {
-    guardando.value = false
+    guardando.value = false;
+  }
+}
+
+async function borrar(zona: Zona) {
+  if (
+    !confirm(
+      `¿Eliminar la zona ${zona.nombre}? Dejará de aparecer para nuevos pedidos.`,
+    )
+  )
+    return;
+  error.value = "";
+  try {
+    await api.borrarZona(zona._id);
+    if (editando.value === zona._id) limpiar();
+    await cargar();
+  } catch (err) {
+    error.value =
+      err instanceof Error ? err.message : "No se pudo eliminar la zona";
   }
 }
 </script>
@@ -53,7 +71,7 @@ async function guardar() {
   <div class="grid gap-6 md:grid-cols-2">
     <div class="rounded-2xl bg-white/[0.04] p-5">
       <h3 class="font-display text-xl tracking-wide text-crema">
-        {{ editando ? 'Editar zona' : 'Nueva zona de envío' }}
+        {{ editando ? "Editar zona" : "Nueva zona de envío" }}
       </h3>
 
       <div class="mt-4 flex flex-col gap-3">
@@ -64,7 +82,10 @@ async function guardar() {
           class="rounded-xl bg-white/[0.06] px-4 py-2.5 font-body text-sm text-crema placeholder:text-crema/30 focus:outline-none focus:ring-2 focus:ring-brasa"
         />
         <div class="relative">
-          <span class="absolute left-4 top-1/2 -translate-y-1/2 font-body text-sm text-crema/40">$</span>
+          <span
+            class="absolute left-4 top-1/2 -translate-y-1/2 font-body text-sm text-crema/40"
+            >$</span
+          >
           <input
             v-model.number="form.envio"
             type="number"
@@ -82,7 +103,13 @@ async function guardar() {
             :disabled="guardando"
             @click="guardar"
           >
-            {{ guardando ? 'Guardando...' : editando ? 'Guardar cambios' : 'Crear zona' }}
+            {{
+              guardando
+                ? "Guardando..."
+                : editando
+                  ? "Guardar cambios"
+                  : "Crear zona"
+            }}
           </button>
           <button
             v-if="editando"
@@ -101,14 +128,24 @@ async function guardar() {
         :key="z._id"
         class="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-white/[0.04] p-4"
       >
-        <p class="min-w-0 truncate font-body text-sm font-medium text-crema">{{ z.nombre }}</p>
+        <p class="min-w-0 truncate font-body text-sm font-medium text-crema">
+          {{ z.nombre }}
+        </p>
         <div class="flex shrink-0 items-center gap-3">
-          <span class="font-display text-sm text-queso">${{ z.envio.toLocaleString('es-AR') }}</span>
+          <span class="font-display text-sm text-queso"
+            >${{ z.envio.toLocaleString("es-AR") }}</span
+          >
           <button
             class="rounded-full border border-crema/20 px-3 py-1.5 font-body text-xs text-crema/70"
             @click="editar(z)"
           >
             Editar
+          </button>
+          <button
+            class="rounded-full border border-red-400/30 px-3 py-1.5 font-body text-xs text-red-400"
+            @click="borrar(z)"
+          >
+            Eliminar
           </button>
         </div>
       </div>
