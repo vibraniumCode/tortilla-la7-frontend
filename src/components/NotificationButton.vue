@@ -1,10 +1,14 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
 import { activarNotificaciones, notificacionesActivas } from "@/notificaciones";
 
 const activas = ref(notificacionesActivas());
 const cargando = ref(false);
 const mensaje = ref("");
+
+onMounted(() => {
+  if (activas.value) activar();
+});
 
 async function activar() {
   cargando.value = true;

@@ -18,10 +18,12 @@ export async function activarNotificaciones() {
   if (!configurada || !clave) throw new Error('Las notificaciones todavía no están configuradas en el servidor')
 
   const registro = await navigator.serviceWorker.ready
-  const suscripcion = await registro.pushManager.subscribe({
-    userVisibleOnly: true,
-    applicationServerKey: convertirClave(clave),
-  })
+  const suscripcion =
+    (await registro.pushManager.getSubscription()) ??
+    (await registro.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: convertirClave(clave),
+    }))
   await api.guardarSuscripcion(suscripcion.toJSON())
 }
 

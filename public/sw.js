@@ -55,6 +55,9 @@ self.addEventListener("push", (event) => {
       body: datos.cuerpo || "Tenés una actualización.",
       icon: "/tortilla.png",
       badge: "/tortilla.png",
+      silent: false,
+      vibrate: [200, 100, 200],
+      requireInteraction: true,
       data: { url: datos.url || "/" },
     }),
   );
