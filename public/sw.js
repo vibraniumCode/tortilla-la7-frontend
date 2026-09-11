@@ -4,6 +4,7 @@ const APP_SHELL = [
   "/index.html",
   "/manifest.webmanifest",
   "/tortilla.png",
+  "/notification-icon.svg",
 ];
 
 self.addEventListener("install", (event) => {
@@ -53,8 +54,8 @@ self.addEventListener("push", (event) => {
   event.waitUntil(
     self.registration.showNotification(datos.titulo || "Parrilla La 7", {
       body: datos.cuerpo || "Tenés una actualización.",
-      icon: "/tortilla.png",
-      badge: "/tortilla.png",
+      icon: "/notification-icon.svg",
+      badge: "/notification-icon.svg",
       silent: false,
       vibrate: [200, 100, 200],
       requireInteraction: true,
