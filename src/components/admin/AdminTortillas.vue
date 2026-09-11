@@ -2,6 +2,7 @@
 import { reactive, ref, onMounted } from "vue";
 import { api, urlImagen, type Puesto, type Tortilla } from "@/api";
 import { useCatalog } from "@/store/catalog";
+import ConfirmDialog from "./ConfirmDialog.vue";
 
 const { cargar } = useCatalog();
 const tortillasAdmin = ref<Tortilla[]>([]);
@@ -12,6 +13,8 @@ const editando = ref<string | null>(null);
 const guardando = ref(false);
 const subiendoImagen = ref(false);
 const error = ref("");
+const tortillaAEliminar = ref<string | null>(null);
+const confirmando = ref(false);
 
 const form = reactive({
   nombre: "",
@@ -107,9 +110,19 @@ async function guardar() {
 }
 
 async function borrar(id: string) {
-  if (!confirm("¿Dar de baja esta tortilla?")) return;
-  await api.borrarTortilla(id);
-  await Promise.all([cargar(), cargarTortillasAdmin()]);
+  tortillaAEliminar.value = id;
+}
+
+async function confirmarBorrado() {
+  if (!tortillaAEliminar.value) return;
+  confirmando.value = true;
+  try {
+    await api.borrarTortilla(tortillaAEliminar.value);
+    tortillaAEliminar.value = null;
+    await Promise.all([cargar(), cargarTortillasAdmin()]);
+  } finally {
+    confirmando.value = false;
+  }
 }
 
 function puestoHabilitado(tortilla: Tortilla, puestoId: string) {
@@ -141,6 +154,14 @@ async function cambiarDisponibilidad(tortilla: Tortilla, puesto: Puesto) {
 
 <template>
   <div class="grid gap-6 md:grid-cols-2">
+    <ConfirmDialog
+      :abierto="!!tortillaAEliminar"
+      titulo="Dar de baja la tortilla"
+      mensaje="La tortilla dejará de aparecer en la carta para nuevos pedidos."
+      :confirmando="confirmando"
+      @cancelar="tortillaAEliminar = null"
+      @confirmar="confirmarBorrado"
+    />
     <!-- Formulario -->
     <div class="rounded-2xl bg-white/[0.04] p-5">
       <h3 class="font-display text-xl tracking-wide text-crema">

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { reactive, ref } from "vue";
 import { api, type Zona } from "@/api";
+import ConfirmDialog from "./ConfirmDialog.vue";
 import { useCatalog } from "@/store/catalog";
 
 const { state: catalogo, cargar } = useCatalog();
@@ -8,6 +9,8 @@ const { state: catalogo, cargar } = useCatalog();
 const editando = ref<string | null>(null);
 const guardando = ref(false);
 const error = ref("");
+const zonaAEliminar = ref<Zona | null>(null);
+const confirmando = ref(false);
 
 const form = reactive({
   nombre: "",
@@ -49,26 +52,38 @@ async function guardar() {
 }
 
 async function borrar(zona: Zona) {
-  if (
-    !confirm(
-      `¿Eliminar la zona ${zona.nombre}? Dejará de aparecer para nuevos pedidos.`,
-    )
-  )
-    return;
+  zonaAEliminar.value = zona;
+}
+
+async function confirmarBorrado() {
+  if (!zonaAEliminar.value) return;
+  const zona = zonaAEliminar.value;
+  confirmando.value = true;
   error.value = "";
   try {
     await api.borrarZona(zona._id);
     if (editando.value === zona._id) limpiar();
+    zonaAEliminar.value = null;
     await cargar();
   } catch (err) {
     error.value =
       err instanceof Error ? err.message : "No se pudo eliminar la zona";
+  } finally {
+    confirmando.value = false;
   }
 }
 </script>
 
 <template>
   <div class="grid gap-6 md:grid-cols-2">
+    <ConfirmDialog
+      :abierto="!!zonaAEliminar"
+      titulo="Eliminar zona de envío"
+      :mensaje="`${zonaAEliminar?.nombre ?? ''} dejará de aparecer para nuevos pedidos. Los pedidos históricos se conservarán.`"
+      :confirmando="confirmando"
+      @cancelar="zonaAEliminar = null"
+      @confirmar="confirmarBorrado"
+    />
     <div class="rounded-2xl bg-white/[0.04] p-5">
       <h3 class="font-display text-xl tracking-wide text-crema">
         {{ editando ? "Editar zona" : "Nueva zona de envío" }}

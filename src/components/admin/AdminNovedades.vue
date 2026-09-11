@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { reactive, ref, onMounted } from "vue";
 import { api, type Novedad } from "@/api";
+import ConfirmDialog from "./ConfirmDialog.vue";
 
 const novedades = ref<Novedad[]>([]);
 const cargando = ref(false);
@@ -8,6 +9,8 @@ const editando = ref<string | null>(null);
 const guardando = ref(false);
 const subiendoFondo = ref(false);
 const error = ref("");
+const confirmando = ref(false);
+const novedadAEliminar = ref<string | null>(null);
 
 const form = reactive({
   eyebrow: "",
@@ -114,14 +117,32 @@ async function guardar() {
 }
 
 async function borrar(id: string) {
-  if (!confirm("¿Eliminar definitivamente esta novedad del carousel?")) return;
-  await api.borrarNovedad(id);
-  await cargarNovedades();
+  novedadAEliminar.value = id;
+}
+
+async function confirmarBorrado() {
+  if (!novedadAEliminar.value) return;
+  confirmando.value = true;
+  try {
+    await api.borrarNovedad(novedadAEliminar.value);
+    novedadAEliminar.value = null;
+    await cargarNovedades();
+  } finally {
+    confirmando.value = false;
+  }
 }
 </script>
 
 <template>
   <div class="grid min-w-0 gap-6 overflow-hidden md:grid-cols-2">
+    <ConfirmDialog
+      :abierto="!!novedadAEliminar"
+      titulo="Eliminar novedad"
+      mensaje="Esta novedad se quitará definitivamente del carousel. Esta acción no se puede deshacer."
+      :confirmando="confirmando"
+      @cancelar="novedadAEliminar = null"
+      @confirmar="confirmarBorrado"
+    />
     <div class="min-w-0 rounded-2xl bg-white/[0.04] p-4 sm:p-5">
       <h3 class="break-words font-display text-xl tracking-wide text-crema">
         {{ editando ? "Editar novedad" : "Nueva novedad (slide del carousel)" }}

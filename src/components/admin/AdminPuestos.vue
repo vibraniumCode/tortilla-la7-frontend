@@ -1,65 +1,87 @@
 <script setup lang="ts">
-import { reactive, ref } from 'vue'
-import { api, type Puesto } from '@/api'
-import { useCatalog } from '@/store/catalog'
+import { reactive, ref } from "vue";
+import { api, type Puesto } from "@/api";
+import { useCatalog } from "@/store/catalog";
+import ConfirmDialog from "./ConfirmDialog.vue";
 
-const { state: catalogo, cargar } = useCatalog()
+const { state: catalogo, cargar } = useCatalog();
 
-const editando = ref<string | null>(null)
-const guardando = ref(false)
-const error = ref('')
+const editando = ref<string | null>(null);
+const guardando = ref(false);
+const error = ref("");
+const puestoAEliminar = ref<Puesto | null>(null);
+const confirmando = ref(false);
 
 const form = reactive({
-  nombre: '',
-  direccion: '',
-})
+  nombre: "",
+  direccion: "",
+});
 
 function limpiar() {
-  editando.value = null
-  form.nombre = ''
-  form.direccion = ''
+  editando.value = null;
+  form.nombre = "";
+  form.direccion = "";
 }
 
 function editar(p: Puesto) {
-  editando.value = p._id
-  form.nombre = p.nombre
-  form.direccion = p.direccion
+  editando.value = p._id;
+  form.nombre = p.nombre;
+  form.direccion = p.direccion;
 }
 
 async function guardar() {
   if (!form.nombre.trim() || !form.direccion.trim()) {
-    error.value = 'Completá nombre y dirección'
-    return
+    error.value = "Completá nombre y dirección";
+    return;
   }
-  error.value = ''
-  guardando.value = true
+  error.value = "";
+  guardando.value = true;
   try {
     if (editando.value) {
-      await api.editarPuesto(editando.value, { ...form })
+      await api.editarPuesto(editando.value, { ...form });
     } else {
-      await api.crearPuesto({ ...form })
+      await api.crearPuesto({ ...form });
     }
-    limpiar()
-    await cargar()
+    limpiar();
+    await cargar();
   } catch (err) {
-    error.value = err instanceof Error ? err.message : 'No se pudo guardar'
+    error.value = err instanceof Error ? err.message : "No se pudo guardar";
   } finally {
-    guardando.value = false
+    guardando.value = false;
   }
 }
 
 async function borrar(id: string) {
-  if (!confirm('¿Dar de baja este puesto?')) return
-  await api.borrarPuesto(id)
-  await cargar()
+  puestoAEliminar.value =
+    catalogo.puestos.find((puesto) => puesto._id === id) ?? null;
+}
+
+async function confirmarBorrado() {
+  if (!puestoAEliminar.value) return;
+  confirmando.value = true;
+  try {
+    await api.borrarPuesto(puestoAEliminar.value._id);
+    puestoAEliminar.value = null;
+    await cargar();
+  } finally {
+    confirmando.value = false;
+  }
 }
 </script>
 
 <template>
   <div class="grid gap-6 md:grid-cols-2">
+    <ConfirmDialog
+      :abierto="!!puestoAEliminar"
+      titulo="Dar de baja el puesto"
+      :mensaje="`${puestoAEliminar?.nombre ?? ''} dejará de estar disponible para nuevos retiros.`"
+      :confirmando="confirmando"
+      @cancelar="puestoAEliminar = null"
+      @confirmar="confirmarBorrado"
+    />
     <div class="rounded-2xl bg-white/[0.04] p-5">
       <h3 class="font-display text-xl tracking-wide text-crema">
-        {{ editando ? 'Editar puesto' : 'Nuevo puesto' }}
+        {{ editando ? "Editar puesto" : "Nuevo puesto" }}
       </h3>
 
       <div class="mt-4 flex flex-col gap-3">
@@ -84,7 +106,13 @@ async function borrar(id: string) {
             :disabled="guardando"
             @click="guardar"
           >
-            {{ guardando ? 'Guardando...' : editando ? 'Guardar cambios' : 'Crear puesto' }}
+            {{
+              guardando
+                ? "Guardando..."
+                : editando
+                  ? "Guardar cambios"
+                  : "Crear puesto"
+            }}
           </button>
           <button
             v-if="editando"
@@ -104,8 +132,12 @@ async function borrar(id: string) {
         class="flex flex-col gap-3 rounded-xl bg-white/[0.04] p-4 sm:flex-row sm:items-center sm:justify-between"
       >
         <div class="min-w-0">
-          <p class="truncate font-body text-sm font-medium text-crema">{{ p.nombre }}</p>
-          <p class="truncate font-body text-xs text-crema/50">{{ p.direccion }}</p>
+          <p class="truncate font-body text-sm font-medium text-crema">
+            {{ p.nombre }}
+          </p>
+          <p class="truncate font-body text-xs text-crema/50">
+            {{ p.direccion }}
+          </p>
         </div>
         <div class="flex shrink-0 gap-2">
           <button
