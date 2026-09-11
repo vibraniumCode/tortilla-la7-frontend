@@ -1,13 +1,15 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
-import { activarNotificaciones, notificacionesActivas } from "@/notificaciones";
+import { activarNotificaciones } from "@/notificaciones";
 
-const activas = ref(notificacionesActivas());
+const activas = ref(false);
 const cargando = ref(false);
 const mensaje = ref("");
 
 onMounted(() => {
-  if (activas.value) activar();
+  if ("Notification" in window && Notification.permission === "granted") {
+    activar();
+  }
 });
 
 async function activar() {
@@ -18,6 +20,7 @@ async function activar() {
     activas.value = true;
     mensaje.value = "Notificaciones activadas";
   } catch (error) {
+    activas.value = false;
     mensaje.value =
       error instanceof Error ? error.message : "No se pudieron activar";
   } finally {
