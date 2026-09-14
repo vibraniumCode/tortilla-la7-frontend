@@ -126,6 +126,7 @@ export interface Usuario {
   email: string
   rol: 'cliente' | 'admin'
   puedeElegirHorario?: boolean
+  envioGratis?: boolean
 }
 
 export interface Sesion {

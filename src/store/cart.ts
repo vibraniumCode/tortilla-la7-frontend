@@ -26,6 +26,7 @@ function estadoGuardado() {
 }
 
 const guardado = estadoGuardado()
+const { state: auth } = useAuth()
 
 const state = reactive({
   items: (guardado?.items ?? []) as ItemCarrito[],
@@ -101,6 +102,7 @@ const costoEnvio = computed(() => {
   if (state.entrega !== 'envio') return 0
   const { state: catalogo } = useCatalog()
   const zona = catalogo.zonas.find((z) => z._id === state.zonaId)
+  if (auth.usuario?.envioGratis) return 0
   return zona?.envio ?? 0
 })
 
@@ -113,7 +115,6 @@ const vuelto = computed(() => {
 
 async function confirmarPedido() {
   state.error = ''
-  const { state: auth } = useAuth()
 
   if (state.entrega === 'envio' && !state.direccion.trim()) {
     state.error = 'Falta la dirección para el envío'

@@ -298,7 +298,11 @@ function cerrar() {
           </div>
           <div class="flex justify-between font-body text-sm text-crema/60">
             <span>Envío</span>
-            <span>${{ costoEnvio.toLocaleString("es-AR") }}</span>
+            <span>{{
+              auth.usuario?.envioGratis
+                ? "Gratis"
+                : `$${costoEnvio.toLocaleString("es-AR")}`
+            }}</span>
           </div>
           <div
             class="mt-1 flex justify-between font-display text-xl tracking-wide text-crema"
