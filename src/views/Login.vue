@@ -45,7 +45,7 @@ async function enviar() {
   <div class="flex min-h-screen items-center justify-center bg-carbon px-6">
     <div class="w-full max-w-sm">
       <h1 class="text-center font-display text-3xl tracking-wide text-crema">
-        Parrilla <span class="text-brasa">La 7</span>
+        Tortillas <span class="text-brasa">La 7</span>
       </h1>
 
       <div class="mt-6 flex rounded-full bg-white/[0.06] p-1">

@@ -34,7 +34,7 @@ async function entrar() {
   <div class="flex min-h-screen items-center justify-center bg-carbon px-6">
     <div class="w-full max-w-sm">
       <h1 class="text-center font-display text-3xl tracking-wide text-crema">
-        Panel <span class="text-brasa">Parrilla La 7</span>
+        Panel <span class="text-brasa">Tortillas La 7</span>
       </h1>
       <p class="mt-1 text-center font-body text-sm text-crema/50">
         Acceso solo para administradores

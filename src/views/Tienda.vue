@@ -25,7 +25,7 @@ onMounted(cargar);
   >
     <header class="mb-5 flex items-center justify-between md:mb-8">
       <h1 class="font-display text-2xl tracking-wide text-crema">
-        Parrilla <span class="text-brasa">La 7</span>
+        Tortillas <span class="text-brasa">La 7</span>
       </h1>
       <div class="relative flex items-center gap-3">
         <NotificationButton v-if="auth.usuario" />

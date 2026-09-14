@@ -97,7 +97,7 @@ const tabs: { id: Tab; label: string }[] = [
     >
       <div>
         <h1 class="font-display text-2xl tracking-wide text-crema sm:text-3xl">
-          Panel <span class="text-brasa">Parrilla La 7</span>
+          Panel <span class="text-brasa">Tortillas La 7</span>
         </h1>
         <p class="mt-1 font-body text-xs text-crema/50 sm:text-sm">
           {{ auth.usuario?.nombre }}
