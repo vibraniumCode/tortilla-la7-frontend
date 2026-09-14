@@ -12,7 +12,7 @@ function tortillasSeleccionadasNoDisponibles(puestoId: string) {
     .filter(
       (tortilla) =>
         seleccionadas.has(tortilla._id) &&
-        tortilla.puestosDisponibles?.length &&
+        tortilla.puestosDisponibles !== undefined &&
         !tortilla.puestosDisponibles.includes(puestoId),
     )
     .map((tortilla) => tortilla.nombre);

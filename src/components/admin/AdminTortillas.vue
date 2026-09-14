@@ -127,7 +127,7 @@ async function confirmarBorrado() {
 
 function puestoHabilitado(tortilla: Tortilla, puestoId: string) {
   return (
-    !tortilla.puestosDisponibles ||
+    tortilla.puestosDisponibles === undefined ||
     tortilla.puestosDisponibles.includes(puestoId)
   );
 }
