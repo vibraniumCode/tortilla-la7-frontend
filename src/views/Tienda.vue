@@ -20,8 +20,10 @@ onMounted(cargar);
 </script>
 
 <template>
-  <main class="min-h-screen bg-carbon px-4 pb-28 pt-6">
-    <header class="mb-5 flex items-center justify-between">
+  <main
+    class="min-h-screen bg-carbon px-4 pb-28 pt-6 md:mx-auto md:max-w-7xl md:px-8 md:pt-8 lg:px-12"
+  >
+    <header class="mb-5 flex items-center justify-between md:mb-8">
       <h1 class="font-display text-2xl tracking-wide text-crema">
         Parrilla <span class="text-brasa">La 7</span>
       </h1>
@@ -106,17 +108,19 @@ onMounted(cargar);
     <template v-else>
       <HeroCarousel />
 
-      <section id="zonas-envio" class="mt-7">
+      <section id="zonas-envio" class="mt-7 md:mt-10">
         <ZoneSelector />
       </section>
 
-      <section class="mt-7">
+      <section class="mt-7 md:mt-10">
         <h3
           class="font-body text-xs font-semibold uppercase tracking-widest text-crema/50"
         >
           Toda la carta
         </h3>
-        <div class="mt-3 flex flex-col gap-3">
+        <div
+          class="mt-3 flex flex-col gap-3 md:grid md:grid-cols-2 md:gap-4 lg:grid-cols-3"
+        >
           <ProductCard
             v-for="t in catalogo.tortillas"
             :key="t._id"

@@ -37,9 +37,9 @@ function cerrar() {
   <Transition name="slide-up">
     <div
       v-if="state.abierto"
-      class="fixed inset-x-0 bottom-0 z-50 max-h-[88vh] overflow-y-auto rounded-t-3xl bg-carbon px-5 pb-8 pt-4"
+      class="fixed inset-x-0 bottom-0 z-50 max-h-[88vh] overflow-y-auto rounded-t-3xl bg-carbon px-5 pb-8 pt-4 md:inset-y-0 md:right-0 md:left-auto md:max-h-none md:w-[min(100%,28rem)] md:rounded-none md:border-l md:border-crema/10 md:px-7 md:pt-7"
     >
-      <div class="mx-auto mb-4 h-1 w-10 rounded-full bg-crema/20" />
+      <div class="mx-auto mb-4 h-1 w-10 rounded-full bg-crema/20 md:hidden" />
 
       <div class="flex items-center justify-between">
         <h2 class="font-display text-2xl tracking-wide text-crema">
