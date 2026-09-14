@@ -186,6 +186,16 @@ const pedidosFiltrados = () =>
                   : `Retiro · ${p.puesto?.nombre ?? "-"}`
               }}
             </p>
+            <p class="mt-1 font-body text-sm font-medium text-crema">
+              Pedido a nombre de:
+              {{
+                p.nombrePedido ?? p.cliente?.nombre ?? "Cliente no disponible"
+              }}
+            </p>
+            <p class="font-body text-xs text-crema/50">
+              Cuenta: {{ p.cliente?.nombre ?? "Cliente no disponible"
+              }}<span v-if="p.cliente?.email"> · {{ p.cliente.email }}</span>
+            </p>
           </div>
           <span class="font-display text-lg tracking-wide text-queso">
             ${{ p.total.toLocaleString("es-AR") }}

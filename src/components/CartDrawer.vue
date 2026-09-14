@@ -75,6 +75,23 @@ function cerrar() {
       </div>
 
       <template v-else-if="!state.confirmado">
+        <div class="mt-5">
+          <label
+            for="nombre-pedido"
+            class="font-body text-xs font-semibold uppercase tracking-widest text-crema/50"
+          >
+            Pedido a nombre de
+          </label>
+          <input
+            id="nombre-pedido"
+            v-model="state.nombrePedido"
+            type="text"
+            autocomplete="name"
+            placeholder="Nombre de quien recibe"
+            class="mt-2 w-full rounded-xl bg-white/[0.06] px-4 py-3 font-body text-sm text-crema placeholder:text-crema/30 focus:outline-none focus:ring-2 focus:ring-brasa"
+          />
+        </div>
+
         <!-- Items -->
         <div class="mt-4 flex flex-col gap-3">
           <div

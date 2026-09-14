@@ -66,6 +66,7 @@ export interface ItemPedido {
 
 export interface NuevoPedido {
   items: ItemPedido[]
+  nombrePedido: string
   entrega: 'envio' | 'retiro'
   zona?: string
   localidad?: string
@@ -79,6 +80,12 @@ export interface NuevoPedido {
 
 export interface Pedido {
   _id: string
+  nombrePedido?: string
+  cliente?: {
+    nombre: string
+    email: string
+    telefono?: string
+  }
   items: ItemPedido[]
   entrega: 'envio' | 'retiro'
   zona?: Zona

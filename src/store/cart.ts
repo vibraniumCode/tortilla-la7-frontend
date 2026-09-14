@@ -30,6 +30,7 @@ const { state: auth } = useAuth()
 
 const state = reactive({
   items: (guardado?.items ?? []) as ItemCarrito[],
+  nombrePedido: guardado?.nombrePedido ?? '',
   entrega: (guardado?.entrega ?? 'envio') as Entrega,
   zonaId: (guardado?.zonaId ?? '') as string,
   localidad: guardado?.localidad ?? '',
@@ -51,6 +52,7 @@ const state = reactive({
 watch(
   () => ({
     items: state.items,
+    nombrePedido: state.nombrePedido,
     entrega: state.entrega,
     zonaId: state.zonaId,
     localidad: state.localidad,
@@ -116,6 +118,11 @@ const vuelto = computed(() => {
 async function confirmarPedido() {
   state.error = ''
 
+  if (!state.nombrePedido.trim()) {
+    state.error = 'Indicá a nombre de quién es el pedido'
+    return
+  }
+
   if (state.entrega === 'envio' && !state.direccion.trim()) {
     state.error = 'Falta la dirección para el envío'
     return
@@ -158,6 +165,7 @@ async function confirmarPedido() {
         precio: i.precio,
         cantidad: i.cantidad,
       })),
+      nombrePedido: state.nombrePedido.trim(),
       entrega: state.entrega,
       zona: state.entrega === 'envio' ? state.zonaId : undefined,
       localidad: state.entrega === 'envio' ? state.localidad : undefined,
@@ -175,6 +183,7 @@ async function confirmarPedido() {
     state.ultimoPedidoId = pedido._id
     state.confirmado = true
     state.items = []
+    state.nombrePedido = ''
     state.direccion = ''
     state.localidad = ''
     state.horarioEntrega = ''
