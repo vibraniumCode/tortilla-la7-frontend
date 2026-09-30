@@ -2,7 +2,6 @@
 import { onMounted, ref } from "vue";
 import { RouterLink } from "vue-router";
 import HeroCarousel from "@/components/HeroCarousel.vue";
-import ZoneSelector from "@/components/ZoneSelector.vue";
 import ProductCard from "@/components/ProductCard.vue";
 import CartButton from "@/components/CartButton.vue";
 import CartDrawer from "@/components/CartDrawer.vue";
@@ -54,7 +53,7 @@ onMounted(cargar);
             class="rounded-lg px-3 py-2 font-body text-sm text-crema/70 hover:bg-white/5"
             @click="menuAbierto = false"
           >
-            Mi cuenta
+            Acceso fábricas
           </RouterLink>
           <template v-else>
             <RouterLink
@@ -64,13 +63,6 @@ onMounted(cargar);
               @click="menuAbierto = false"
             >
               Panel admin
-            </RouterLink>
-            <RouterLink
-              to="/mis-pedidos"
-              class="rounded-lg px-3 py-2 font-body text-sm text-crema/70 hover:bg-white/5"
-              @click="menuAbierto = false"
-            >
-              Mis pedidos
             </RouterLink>
             <button
               class="rounded-lg px-3 py-2 text-left font-body text-sm text-crema/70 hover:bg-white/5"
@@ -107,10 +99,6 @@ onMounted(cargar);
 
     <template v-else>
       <HeroCarousel />
-
-      <section id="zonas-envio" class="mt-7 md:mt-10">
-        <ZoneSelector />
-      </section>
 
       <section class="mt-7 md:mt-10">
         <h3

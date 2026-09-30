@@ -3,7 +3,6 @@ import Tienda from '@/views/Tienda.vue'
 import Admin from '@/views/Admin.vue'
 import AdminLogin from '@/views/AdminLogin.vue'
 import Login from '@/views/Login.vue'
-import MisPedidos from '@/views/MisPedidos.vue'
 import { useAuth } from '@/store/auth'
 
 export const router = createRouter({
@@ -11,7 +10,7 @@ export const router = createRouter({
   routes: [
     { path: '/', name: 'tienda', component: Tienda },
     { path: '/login', name: 'login', component: Login },
-    { path: '/mis-pedidos', name: 'mis-pedidos', component: MisPedidos },
+    { path: '/mis-pedidos', redirect: '/' },
     { path: '/admin/login', name: 'admin-login', component: AdminLogin },
     { path: '/admin', name: 'admin', component: Admin },
   ],

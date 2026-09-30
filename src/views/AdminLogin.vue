@@ -45,14 +45,14 @@ async function entrar() {
           v-model="form.email"
           type="email"
           placeholder="Email"
-          class="rounded-xl bg-white/[0.06] px-4 py-3 font-body text-sm text-crema placeholder:text-crema/30 focus:outline-none focus:ring-2 focus:ring-brasa"
+          class="rounded-xl bg-white/6 px-4 py-3 font-body text-sm text-crema placeholder:text-crema/30 focus:outline-none focus:ring-2 focus:ring-brasa"
           @keyup.enter="entrar"
         />
         <input
           v-model="form.password"
           type="password"
           placeholder="Contraseña"
-          class="rounded-xl bg-white/[0.06] px-4 py-3 font-body text-sm text-crema placeholder:text-crema/30 focus:outline-none focus:ring-2 focus:ring-brasa"
+          class="rounded-xl bg-white/6 px-4 py-3 font-body text-sm text-crema placeholder:text-crema/30 focus:outline-none focus:ring-2 focus:ring-brasa"
           @keyup.enter="entrar"
         />
 

@@ -110,7 +110,8 @@ export interface Pedido {
 }
 
 export interface Configuracion {
-  aliasTransferencia: string
+  whatsapp: string
+  aliasTransferencia?: string
   cbu?: string
   titular?: string
 }
@@ -164,8 +165,6 @@ async function pedir<T>(path: string, options?: RequestInit): Promise<T> {
 
 export const api = {
   // Auth
-  registro: (data: { nombre: string; email: string; password: string; telefono?: string }) =>
-    pedir<Sesion>('/auth/registro', { method: 'POST', body: JSON.stringify(data) }),
   login: (data: { email: string; password: string }) =>
     pedir<Sesion>('/auth/login', { method: 'POST', body: JSON.stringify(data) }),
   me: () => pedir<Usuario>('/auth/me'),

@@ -1,7 +1,5 @@
 import { reactive, computed, watch } from 'vue'
-import { api } from '@/api'
 import { useCatalog } from './catalog'
-import { useAuth } from './auth'
 
 export interface ItemCarrito {
   id: string
@@ -11,7 +9,6 @@ export interface ItemCarrito {
 }
 
 type Entrega = 'envio' | 'retiro'
-type Pago = 'efectivo' | 'transferencia'
 
 const CLAVE_STORAGE = 'carrito'
 
@@ -26,20 +23,13 @@ function estadoGuardado() {
 }
 
 const guardado = estadoGuardado()
-const { state: auth } = useAuth()
 
 const state = reactive({
   items: (guardado?.items ?? []) as ItemCarrito[],
   nombrePedido: guardado?.nombrePedido ?? '',
   entrega: (guardado?.entrega ?? 'envio') as Entrega,
-  zonaId: (guardado?.zonaId ?? '') as string,
-  localidad: guardado?.localidad ?? '',
-  puestoId: (guardado?.puestoId ?? '') as string,
-  pago: (guardado?.pago ?? 'efectivo') as Pago,
   direccion: guardado?.direccion ?? '',
-  horarioEntrega: guardado?.horarioEntrega ?? '',
   comentario: guardado?.comentario ?? '',
-  montoEfectivo: (guardado?.montoEfectivo ?? null) as number | null,
   abierto: false,
   enviando: false,
   error: '',
@@ -54,14 +44,8 @@ watch(
     items: state.items,
     nombrePedido: state.nombrePedido,
     entrega: state.entrega,
-    zonaId: state.zonaId,
-    localidad: state.localidad,
-    puestoId: state.puestoId,
-    pago: state.pago,
     direccion: state.direccion,
-    horarioEntrega: state.horarioEntrega,
     comentario: state.comentario,
-    montoEfectivo: state.montoEfectivo,
   }),
   (valor) => {
     localStorage.setItem(CLAVE_STORAGE, JSON.stringify(valor))
@@ -100,102 +84,60 @@ const subtotal = computed(() =>
   state.items.reduce((acc, i) => acc + i.precio * i.cantidad, 0),
 )
 
-const costoEnvio = computed(() => {
-  if (state.entrega !== 'envio') return 0
-  const { state: catalogo } = useCatalog()
-  const zona = catalogo.zonas.find((z) => z._id === state.zonaId)
-  if (auth.usuario?.envioGratis) return 0
-  return zona?.envio ?? 0
-})
+const total = computed(() => subtotal.value)
 
-const total = computed(() => subtotal.value + costoEnvio.value)
-
-const vuelto = computed(() => {
-  if (state.pago !== 'efectivo' || state.montoEfectivo == null) return null
-  return Math.max(0, state.montoEfectivo - total.value)
-})
-
-async function confirmarPedido() {
+function confirmarPedido() {
   state.error = ''
 
+  if (!state.items.length) {
+    state.error = 'Agregá al menos una tortilla al pedido'
+    return
+  }
   if (!state.nombrePedido.trim()) {
     state.error = 'Indicá a nombre de quién es el pedido'
     return
   }
 
   if (state.entrega === 'envio' && !state.direccion.trim()) {
-    state.error = 'Falta la dirección para el envío'
+    state.error = 'Indicá la dirección para el envío'
     return
   }
-  if (state.entrega === 'envio' && !state.zonaId) {
-    state.error = 'Elegí una zona de envío'
-    return
-  }
-  if (state.entrega === 'envio' && !state.localidad.trim()) {
-    state.error = 'Falta la localidad para el envío'
-    return
-  }
-  if (state.entrega === 'envio' && state.pago !== 'transferencia') {
-    state.error = 'Los envíos a domicilio solo aceptan transferencia'
-    return
-  }
-  if (state.entrega === 'envio' && auth.usuario?.puedeElegirHorario && !state.horarioEntrega) {
-    state.error = 'Elegí un horario de entrega'
-    return
-  }
-  if (state.entrega === 'retiro' && !state.puestoId) {
-    state.error = 'Elegí un puesto de retiro'
-    return
-  }
-  if (
-    state.pago === 'efectivo' &&
-    state.montoEfectivo != null &&
-    state.montoEfectivo < total.value
-  ) {
-    state.error = 'El monto que pusiste es menor al total del pedido'
+  const { state: catalogo } = useCatalog()
+  const telefono = catalogo.configuracion?.whatsapp?.replace(/\D/g, '')
+  if (!telefono) {
+    state.error = 'El WhatsApp de Tortillas La 7 todavía no está configurado'
     return
   }
 
-  state.enviando = true
-  try {
-    const pedido = await api.crearPedido({
-      items: state.items.map((i) => ({
-        tortilla: i.id,
-        nombre: i.nombre,
-        precio: i.precio,
-        cantidad: i.cantidad,
-      })),
-      nombrePedido: state.nombrePedido.trim(),
-      entrega: state.entrega,
-      zona: state.entrega === 'envio' ? state.zonaId : undefined,
-      localidad: state.entrega === 'envio' ? state.localidad : undefined,
-      puesto: state.entrega === 'retiro' ? state.puestoId : undefined,
-      direccion: state.entrega === 'envio' ? state.direccion : undefined,
-      horarioEntrega:
-        state.entrega === 'envio' && auth.usuario?.puedeElegirHorario
-          ? state.horarioEntrega || undefined
-          : undefined,
-      comentario: state.comentario || undefined,
-      pago: state.pago,
-      montoEfectivo: state.pago === 'efectivo' ? state.montoEfectivo ?? undefined : undefined,
-    })
+  const lineas = state.items.map(
+    (item) => `• ${item.cantidad} x ${item.nombre} — $${(item.precio * item.cantidad).toLocaleString('es-AR')}`,
+  )
+  const mensaje = [
+    'Hola, quiero hacer este pedido en Tortillas La 7:',
+    '',
+    ...lineas,
+    '',
+    `Total de productos: $${subtotal.value.toLocaleString('es-AR')}`,
+    `Nombre: ${state.nombrePedido.trim()}`,
+    `Modalidad: ${state.entrega === 'envio' ? 'Envío a domicilio' : 'Retiro'}`,
+    ...(state.entrega === 'envio'
+      ? [`Dirección: ${state.direccion.trim()}`]
+      : []),
+    ...(state.comentario.trim() ? [`Comentario: ${state.comentario.trim()}`] : []),
+  ].join('\n')
+  const whatsappUrl = `https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`
 
-    state.ultimoPedidoId = pedido._id
-    state.confirmado = true
-    state.items = []
-    state.nombrePedido = ''
-    state.direccion = ''
-    state.localidad = ''
-    state.horarioEntrega = ''
-    state.comentario = ''
-    state.montoEfectivo = null
-    localStorage.removeItem(CLAVE_STORAGE)
-  } catch (err) {
-    state.error =
-      err instanceof Error ? err.message : 'No se pudo enviar el pedido'
-  } finally {
-    state.enviando = false
+  const ventanaWhatsApp = window.open(whatsappUrl, '_blank', 'noopener,noreferrer')
+  if (!ventanaWhatsApp) {
+    state.error = 'No se pudo abrir WhatsApp. Habilitá las ventanas emergentes e intentá de nuevo.'
+    return
   }
+  state.confirmado = true
+  state.items = []
+  state.nombrePedido = ''
+  state.direccion = ''
+  state.comentario = ''
+  localStorage.removeItem(CLAVE_STORAGE)
 }
 
 export function useCart() {
@@ -206,9 +148,7 @@ export function useCart() {
     setCantidad,
     cantidadTotal,
     subtotal,
-    costoEnvio,
     total,
-    vuelto,
     confirmarPedido,
   }
 }

@@ -12,12 +12,6 @@ function guardarSesion(token: string, usuario: Usuario) {
   state.usuario = usuario
 }
 
-async function registro(nombre: string, email: string, password: string, telefono?: string) {
-  state.error = ''
-  const sesion = await api.registro({ nombre, email, password, telefono })
-  guardarSesion(sesion.token, sesion.usuario)
-}
-
 async function login(email: string, password: string) {
   state.error = ''
   const sesion = await api.login({ email, password })
@@ -36,7 +30,11 @@ async function restaurarSesion() {
     return
   }
   try {
-    state.usuario = await api.me()
+    const usuario = await api.me()
+    if (usuario.rol !== 'admin' && !usuario.puedeElegirHorario && !usuario.envioGratis) {
+      throw new Error('Cuenta sin acceso a esta versión')
+    }
+    state.usuario = usuario
   } catch {
     localStorage.removeItem('token')
     state.usuario = null
@@ -46,5 +44,5 @@ async function restaurarSesion() {
 }
 
 export function useAuth() {
-  return { state, registro, login, logout, restaurarSesion }
+  return { state, login, logout, restaurarSesion }
 }
