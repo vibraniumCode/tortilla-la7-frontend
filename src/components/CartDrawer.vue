@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useCart } from "@/store/cart";
+import PuestoSelector from "@/components/PuestoSelector.vue";
 
 const { state, setCantidad, subtotal, cantidadTotal, confirmarPedido } =
   useCart();
@@ -136,6 +137,7 @@ function cerrar() {
             placeholder="Calle, número, piso/depto"
             class="mt-3 w-full rounded-xl bg-white/6 px-4 py-3 font-body text-sm text-crema placeholder:text-crema/30 focus:outline-none focus:ring-2 focus:ring-brasa"
           />
+          <PuestoSelector v-else />
         </div>
 
         <div class="mt-5">

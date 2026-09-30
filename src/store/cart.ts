@@ -28,6 +28,7 @@ const state = reactive({
   items: (guardado?.items ?? []) as ItemCarrito[],
   nombrePedido: guardado?.nombrePedido ?? '',
   entrega: (guardado?.entrega ?? 'envio') as Entrega,
+  puestoId: (guardado?.puestoId ?? '') as string,
   direccion: guardado?.direccion ?? '',
   comentario: guardado?.comentario ?? '',
   abierto: false,
@@ -44,6 +45,7 @@ watch(
     items: state.items,
     nombrePedido: state.nombrePedido,
     entrega: state.entrega,
+    puestoId: state.puestoId,
     direccion: state.direccion,
     comentario: state.comentario,
   }),
@@ -103,6 +105,24 @@ function confirmarPedido() {
     return
   }
   const { state: catalogo } = useCatalog()
+  const puesto = state.entrega === 'retiro'
+    ? catalogo.puestos.find((p) => p._id === state.puestoId)
+    : undefined
+  if (state.entrega === 'retiro' && !puesto) {
+    state.error = 'Elegí un puesto de retiro'
+    return
+  }
+  if (puesto) {
+    const noDisponibles = state.items.filter((item) => {
+      const tortilla = catalogo.tortillas.find((t) => t._id === item.id)
+      return tortilla?.puestosDisponibles !== undefined &&
+        !tortilla.puestosDisponibles.includes(puesto._id)
+    })
+    if (noDisponibles.length) {
+      state.error = `Estas tortillas no están habilitadas en ${puesto.nombre}: ${noDisponibles.map((item) => item.nombre).join(', ')}`
+      return
+    }
+  }
   const telefono = catalogo.configuracion?.whatsapp?.replace(/\D/g, '')
   if (!telefono) {
     state.error = 'El WhatsApp de Tortillas La 7 todavía no está configurado'
@@ -122,7 +142,7 @@ function confirmarPedido() {
     `Modalidad: ${state.entrega === 'envio' ? 'Envío a domicilio' : 'Retiro'}`,
     ...(state.entrega === 'envio'
       ? [`Dirección: ${state.direccion.trim()}`]
-      : []),
+      : [`Puesto de retiro: ${puesto!.nombre} — ${puesto!.direccion}`]),
     ...(state.comentario.trim() ? [`Comentario: ${state.comentario.trim()}`] : []),
   ].join('\n')
   const whatsappUrl = `https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`
@@ -135,6 +155,7 @@ function confirmarPedido() {
   state.confirmado = true
   state.items = []
   state.nombrePedido = ''
+  state.puestoId = ''
   state.direccion = ''
   state.comentario = ''
   localStorage.removeItem(CLAVE_STORAGE)

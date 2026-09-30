@@ -4,10 +4,11 @@ import { RouterLink, useRouter } from "vue-router";
 import { useCatalog } from "@/store/catalog";
 import { useAuth } from "@/store/auth";
 import AdminTortillas from "@/components/admin/AdminTortillas.vue";
+import AdminPuestos from "@/components/admin/AdminPuestos.vue";
 import AdminNovedades from "@/components/admin/AdminNovedades.vue";
 import AdminConfiguracion from "@/components/admin/AdminConfiguracion.vue";
 
-type Tab = "tortillas" | "novedades" | "contacto";
+type Tab = "tortillas" | "puestos" | "novedades" | "contacto";
 const tab = ref<Tab>("tortillas");
 const { cargar } = useCatalog();
 const { state: auth, logout } = useAuth();
@@ -22,6 +23,7 @@ function salir() {
 
 const tabs: { id: Tab; label: string }[] = [
   { id: "tortillas", label: "Tortillas" },
+  { id: "puestos", label: "Puestos de retiro" },
   { id: "novedades", label: "Novedades" },
   { id: "contacto", label: "WhatsApp y pagos" },
 ];
@@ -73,6 +75,7 @@ const tabs: { id: Tab; label: string }[] = [
     </nav>
 
     <AdminTortillas v-if="tab === 'tortillas'" />
+    <AdminPuestos v-else-if="tab === 'puestos'" />
     <AdminNovedades v-else-if="tab === 'novedades'" />
     <AdminConfiguracion v-else-if="tab === 'contacto'" />
   </div>
