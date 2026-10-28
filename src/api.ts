@@ -28,6 +28,7 @@ export interface Tortilla {
   precio: number
   imagen: string
   nueva?: boolean
+  activa?: boolean
   puestosDisponibles?: string[]
 }
 

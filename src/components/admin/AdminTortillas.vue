@@ -8,6 +8,7 @@ const { cargar } = useCatalog();
 const tortillasAdmin = ref<Tortilla[]>([]);
 const puestos = ref<Puesto[]>([]);
 const cambiandoPuesto = ref("");
+const cambiandoEstado = ref("");
 
 const editando = ref<string | null>(null);
 const guardando = ref(false);
@@ -122,6 +123,20 @@ async function confirmarBorrado() {
     await Promise.all([cargar(), cargarTortillasAdmin()]);
   } finally {
     confirmando.value = false;
+  }
+}
+
+async function reactivar(tortilla: Tortilla) {
+  cambiandoEstado.value = tortilla._id;
+  error.value = "";
+  try {
+    await api.editarTortilla(tortilla._id, { activa: true });
+    await Promise.all([cargar(), cargarTortillasAdmin()]);
+  } catch (err) {
+    error.value =
+      err instanceof Error ? err.message : "No se pudo reactivar la tortilla";
+  } finally {
+    cambiandoEstado.value = "";
   }
 }
 
@@ -274,6 +289,12 @@ async function cambiarDisponibilidad(tortilla: Tortilla, puesto: Puesto) {
             <p class="font-display text-sm text-queso">
               ${{ t.precio.toLocaleString("es-AR") }}
             </p>
+            <p
+              v-if="t.activa === false"
+              class="mt-1 font-body text-xs text-amber-300"
+            >
+              Inactiva: no aparece en la tienda
+            </p>
             <div v-if="puestos.length" class="mt-2 flex flex-wrap gap-1.5">
               <button
                 v-for="puesto in puestos"
@@ -301,12 +322,21 @@ async function cambiarDisponibilidad(tortilla: Tortilla, puesto: Puesto) {
         </div>
         <div class="flex shrink-0 gap-2 sm:ml-auto">
           <button
+            v-if="t.activa === false"
+            class="flex-1 rounded-full border border-green-400/30 px-3 py-1.5 font-body text-xs text-green-300 disabled:opacity-50 sm:flex-none"
+            :disabled="cambiandoEstado === t._id"
+            @click="reactivar(t)"
+          >
+            {{ cambiandoEstado === t._id ? "Reactivando..." : "Reactivar" }}
+          </button>
+          <button
             class="flex-1 rounded-full border border-crema/20 px-3 py-1.5 font-body text-xs text-crema/70 sm:flex-none"
             @click="editar(t)"
           >
             Editar
           </button>
           <button
+            v-if="t.activa !== false"
             class="flex-1 rounded-full border border-red-400/30 px-3 py-1.5 font-body text-xs text-red-400 sm:flex-none"
             @click="borrar(t._id)"
           >

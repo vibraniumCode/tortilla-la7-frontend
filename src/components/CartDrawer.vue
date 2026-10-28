@@ -1,9 +1,21 @@
 <script setup lang="ts">
+import { computed } from "vue";
 import { useCart } from "@/store/cart";
+import { useCatalog } from "@/store/catalog";
+import { disponibleParaEnvio } from "@/store/disponibilidad";
 import PuestoSelector from "@/components/PuestoSelector.vue";
 
 const { state, setCantidad, subtotal, cantidadTotal, confirmarPedido } =
   useCart();
+const { state: catalogo } = useCatalog();
+const noDisponiblesEnvio = computed(() =>
+  state.items
+    .filter((item) => {
+      const tortilla = catalogo.tortillas.find((t) => t._id === item.id);
+      return tortilla && !disponibleParaEnvio(tortilla, catalogo.puestos);
+    })
+    .map((item) => item.nombre),
+);
 
 function cerrar() {
   state.abierto = false;
@@ -137,7 +149,14 @@ function cerrar() {
             placeholder="Calle, número, piso/depto"
             class="mt-3 w-full rounded-xl bg-white/6 px-4 py-3 font-body text-sm text-crema placeholder:text-crema/30 focus:outline-none focus:ring-2 focus:ring-brasa"
           />
-          <PuestoSelector v-else />
+          <p
+            v-if="state.entrega === 'envio' && noDisponiblesEnvio.length"
+            class="mt-2 font-body text-xs text-amber-300/90"
+          >
+            No disponible para envío:
+            {{ noDisponiblesEnvio.join(", ") }}
+          </p>
+          <PuestoSelector v-if="state.entrega === 'retiro'" />
         </div>
 
         <div class="mt-5">

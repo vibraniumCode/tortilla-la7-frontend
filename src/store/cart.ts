@@ -1,5 +1,6 @@
 import { reactive, computed, watch } from 'vue'
 import { useCatalog } from './catalog'
+import { disponibleEnPuesto, disponibleParaEnvio } from './disponibilidad'
 
 export interface ItemCarrito {
   id: string
@@ -112,16 +113,19 @@ function confirmarPedido() {
     state.error = 'Elegí un puesto de retiro'
     return
   }
-  if (puesto) {
-    const noDisponibles = state.items.filter((item) => {
-      const tortilla = catalogo.tortillas.find((t) => t._id === item.id)
-      return tortilla?.puestosDisponibles !== undefined &&
-        !tortilla.puestosDisponibles.includes(puesto._id)
-    })
-    if (noDisponibles.length) {
-      state.error = `Estas tortillas no están habilitadas en ${puesto.nombre}: ${noDisponibles.map((item) => item.nombre).join(', ')}`
-      return
-    }
+  const noDisponibles = state.items.filter((item) => {
+    const tortilla = catalogo.tortillas.find((t) => t._id === item.id)
+    if (!tortilla) return false
+    return state.entrega === 'envio'
+      ? !disponibleParaEnvio(tortilla, catalogo.puestos)
+      : !!puesto && !disponibleEnPuesto(tortilla, puesto._id)
+  })
+  if (noDisponibles.length) {
+    const nombres = noDisponibles.map((item) => item.nombre).join(', ')
+    state.error = state.entrega === 'envio'
+      ? `No disponible para envío: ${nombres}`
+      : `No disponible en ${puesto!.nombre}: ${nombres}`
+    return
   }
   const telefono = catalogo.configuracion?.whatsapp?.replace(/\D/g, '')
   if (!telefono) {
