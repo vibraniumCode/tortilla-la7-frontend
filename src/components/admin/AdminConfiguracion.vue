@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { reactive, ref, onMounted } from "vue";
 import { api } from "@/api";
+import { useCatalog } from "@/store/catalog";
+
+const { state: catalogo } = useCatalog();
 
 const form = reactive({
   whatsapp: "",
@@ -13,15 +16,20 @@ const cargando = ref(false);
 const guardando = ref(false);
 const guardado = ref(false);
 const error = ref("");
+const errorCarga = ref("");
 
 async function cargar() {
   cargando.value = true;
+  errorCarga.value = "";
   try {
     const config = await api.getConfiguracion();
     form.whatsapp = config.whatsapp ?? "";
     form.aliasTransferencia = config.aliasTransferencia ?? "";
     form.cbu = config.cbu ?? "";
     form.titular = config.titular ?? "";
+  } catch (err) {
+    errorCarga.value =
+      err instanceof Error ? err.message : "No se pudo cargar la configuración";
   } finally {
     cargando.value = false;
   }
@@ -34,7 +42,12 @@ async function guardar() {
   guardado.value = false;
   guardando.value = true;
   try {
-    await api.editarConfiguracion({ ...form });
+    const config = await api.editarConfiguracion({ ...form });
+    form.whatsapp = config.whatsapp ?? "";
+    form.aliasTransferencia = config.aliasTransferencia ?? "";
+    form.cbu = config.cbu ?? "";
+    form.titular = config.titular ?? "";
+    catalogo.configuracion = config;
     guardado.value = true;
     setTimeout(() => (guardado.value = false), 2500);
   } catch (err) {
@@ -57,6 +70,18 @@ async function guardar() {
 
     <div v-if="cargando" class="mt-4 font-body text-sm text-crema/40">
       Cargando...
+    </div>
+
+    <div v-else-if="errorCarga" class="mt-4">
+      <p class="font-body text-sm text-red-400">
+        No se pudo cargar la configuración: {{ errorCarga }}
+      </p>
+      <button
+        class="mt-3 rounded-full border border-white/15 px-4 py-2 font-body text-sm text-crema"
+        @click="cargar"
+      >
+        Reintentar
+      </button>
     </div>
 
     <div v-else class="mt-4 flex flex-col gap-3">
